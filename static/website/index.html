@@ -1,0 +1,965 @@
+<!DOCTYPE html>
+<html lang="ru">
+	<head>
+		<meta charset="UTF-8" />
+		<meta
+			name="viewport"
+			content="width=device-width, initial-scale=1.0" />
+		<title>Fidelio.pro - Разработка модулей для Fidelio V8</title>
+		<meta
+			name="description"
+			content="Разработка модулей и интеграций для Fidelio V8. Большой опыт создания дополнительных модулей и техническая поддержка." />
+		<link
+			rel="shortcut icon"
+			href="images/logo-100x89.png"
+			type="image/x-icon" />
+
+		<style>
+			:root {
+				--primary-bg: #1e2a3a;
+				--secondary-bg: #2c3e50;
+				--accent-teal: #4dd0e1;
+				--accent-teal-light: #80deea;
+				--accent-teal-dark: #26a69a;
+				--accent-orange: #ff5722;
+				--accent-orange-bright: #ff6f00;
+				--text-primary: #ffffff;
+				--text-secondary: #e8e8e8;
+				--text-muted: #b0b0b0;
+				--gradient-primary: linear-gradient(
+					135deg,
+					var(--accent-teal) 0%,
+					var(--primary-bg) 100%
+				);
+				--gradient-orange: linear-gradient(
+					135deg,
+					var(--accent-orange) 0%,
+					var(--accent-orange-bright) 100%
+				);
+				--shadow-glow: 0 0 30px rgba(255, 87, 34, 0.3);
+				--shadow-teal: 0 0 20px rgba(77, 208, 225, 0.4);
+			}
+
+			* {
+				margin: 0;
+				padding: 0;
+				box-sizing: border-box;
+			}
+
+			body {
+				font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+				background: var(--primary-bg);
+				color: var(--text-primary);
+				line-height: 1.6;
+				overflow-x: hidden;
+			}
+
+			/* Particles Background */
+			#particles-canvas {
+				position: fixed;
+				top: 0;
+				left: 0;
+				width: 100%;
+				height: 100%;
+				z-index: -1;
+				opacity: 0.6;
+			}
+
+			/* Smooth Scrolling */
+			html {
+				scroll-behavior: smooth;
+			}
+
+			/* Hero Section */
+			.hero {
+				min-height: 100vh;
+				display: flex;
+				align-items: center;
+				justify-content: center;
+				text-align: center;
+				position: relative;
+				background: var(--gradient-primary);
+				overflow: hidden;
+			}
+
+			.hero::before {
+				content: "";
+				position: absolute;
+				top: 0;
+				left: 0;
+				right: 0;
+				bottom: 0;
+				background: radial-gradient(
+					circle at 50% 50%,
+					rgba(77, 208, 225, 0.3) 0%,
+					transparent 70%
+				);
+				animation: pulse 4s ease-in-out infinite;
+			}
+
+			@keyframes pulse {
+				0%,
+				100% {
+					opacity: 0.3;
+				}
+				50% {
+					opacity: 0.6;
+				}
+			}
+
+			.hero-content {
+				z-index: 2;
+				max-width: 800px;
+				padding: 2rem;
+			}
+
+			/* Hero Logo Styles */
+			.hero-logo {
+				margin-bottom: 2rem;
+				animation: fadeInDown 1s ease-out both;
+			}
+
+			.logo-image {
+				max-width: 320px;
+				width: 100%;
+				height: auto;
+				border-radius: 20px;
+				box-shadow: 0 10px 30px rgba(77, 208, 225, 0.3);
+				transition: transform 0.3s ease, box-shadow 0.3s ease;
+			}
+
+			.logo-image:hover {
+				transform: scale(1.05);
+				box-shadow: 0 15px 40px rgba(77, 208, 225, 0.5);
+			}
+
+			@keyframes fadeInDown {
+				from {
+					opacity: 0;
+					transform: translateY(-30px);
+				}
+				to {
+					opacity: 1;
+					transform: translateY(0);
+				}
+			}
+
+			.hero h1 {
+				font-size: clamp(3rem, 8vw, 6rem);
+				font-weight: 700;
+				margin-bottom: 1rem;
+				background: var(--gradient-orange);
+				-webkit-background-clip: text;
+				-webkit-text-fill-color: transparent;
+				background-clip: text;
+				animation: glow 3s ease-in-out infinite alternate;
+			}
+
+			@keyframes glow {
+				from {
+					filter: drop-shadow(0 0 10px var(--accent-orange));
+				}
+				to {
+					filter: drop-shadow(0 0 20px var(--accent-orange-bright));
+				}
+			}
+
+			.hero-subtitle {
+				font-size: clamp(1.2rem, 3vw, 2rem);
+				margin-bottom: 1rem;
+				color: var(--text-secondary);
+				animation: fadeInUp 1s ease-out 0.5s both;
+			}
+
+			.hero-description {
+				font-size: clamp(1rem, 2vw, 1.3rem);
+				margin-bottom: 3rem;
+				color: var(--text-muted);
+				animation: fadeInUp 1s ease-out 1s both;
+			}
+
+			@keyframes fadeInUp {
+				from {
+					opacity: 0;
+					transform: translateY(30px);
+				}
+				to {
+					opacity: 1;
+					transform: translateY(0);
+				}
+			}
+
+			/* Buttons */
+			.btn-group {
+				display: flex;
+				gap: 1rem;
+				justify-content: center;
+				flex-wrap: wrap;
+				animation: fadeInUp 1s ease-out 1.5s both;
+			}
+
+			.btn {
+				padding: 1rem 2rem;
+				border: none;
+				border-radius: 50px;
+				font-size: 1.1rem;
+				font-weight: 600;
+				text-decoration: none;
+				display: inline-flex;
+				align-items: center;
+				gap: 0.5rem;
+				transition: all 0.3s ease;
+				cursor: pointer;
+				position: relative;
+				overflow: hidden;
+			}
+
+			.btn-primary {
+				background: var(--gradient-orange);
+				color: var(--primary-bg);
+				box-shadow: var(--shadow-glow);
+			}
+
+			.btn-primary:hover {
+				transform: translateY(-3px);
+				box-shadow: 0 10px 40px rgba(255, 87, 34, 0.5);
+			}
+
+			.btn-secondary {
+				background: transparent;
+				color: var(--text-primary);
+				border: 2px solid var(--accent-teal);
+				box-shadow: var(--shadow-teal);
+			}
+
+			.btn-secondary:hover {
+				background: var(--accent-teal);
+				transform: translateY(-3px);
+				box-shadow: 0 10px 40px rgba(77, 208, 225, 0.5);
+			}
+
+			/* Sections */
+			.section {
+				padding: 5rem 2rem;
+				max-width: 1200px;
+				margin: 0 auto;
+			}
+
+			.section-title {
+				font-size: clamp(2rem, 5vw, 3.5rem);
+				text-align: center;
+				margin-bottom: 3rem;
+				background: var(--gradient-orange);
+				-webkit-background-clip: text;
+				-webkit-text-fill-color: transparent;
+				background-clip: text;
+			}
+
+			.section-subtitle {
+				font-size: 1.3rem;
+				text-align: center;
+				color: var(--text-secondary);
+				margin-bottom: 4rem;
+				max-width: 600px;
+				margin-left: auto;
+				margin-right: auto;
+			}
+
+			/* Development Section */
+			.development-grid {
+				display: grid;
+				grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+				gap: 2rem;
+				margin-bottom: 4rem;
+			}
+
+			.feature-card {
+				background: var(--secondary-bg);
+				border-radius: 20px;
+				padding: 2rem;
+				text-align: center;
+				transition: all 0.3s ease;
+				border: 1px solid var(--accent-teal);
+				position: relative;
+				overflow: hidden;
+			}
+
+			.feature-card::before {
+				content: "";
+				position: absolute;
+				top: 0;
+				left: -100%;
+				width: 100%;
+				height: 100%;
+				background: linear-gradient(
+					90deg,
+					transparent,
+					rgba(255, 87, 34, 0.1),
+					transparent
+				);
+				transition: left 0.5s ease;
+			}
+
+			.feature-card:hover::before {
+				left: 100%;
+			}
+
+			.feature-card:hover {
+				transform: translateY(-10px);
+				box-shadow: var(--shadow-teal);
+				border-color: var(--accent-orange);
+			}
+
+			.feature-icon {
+				font-size: 3rem;
+				margin-bottom: 1rem;
+				color: var(--accent-orange);
+			}
+
+			.feature-title {
+				font-size: 1.5rem;
+				margin-bottom: 1rem;
+				color: var(--text-primary);
+			}
+
+			.feature-description {
+				color: var(--text-muted);
+				line-height: 1.6;
+			}
+
+			/* Solutions Grid */
+			.solutions-grid {
+				display: grid;
+				grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+				gap: 2rem;
+			}
+
+			.solution-card {
+				background: var(--secondary-bg);
+				border-radius: 15px;
+				padding: 2rem;
+				border: 1px solid var(--accent-teal);
+				transition: all 0.3s ease;
+				position: relative;
+			}
+
+			.solution-card:hover {
+				transform: scale(1.02);
+				box-shadow: var(--shadow-glow);
+				border-color: var(--accent-orange);
+			}
+
+			.solution-title {
+				font-size: 1.3rem;
+				margin-bottom: 1rem;
+				color: var(--accent-orange);
+			}
+
+			.solution-description {
+				color: var(--text-secondary);
+				margin-bottom: 1rem;
+			}
+
+			.solution-features {
+				list-style: none;
+			}
+
+			.solution-features li {
+				color: var(--text-muted);
+				margin-bottom: 0.5rem;
+				padding-left: 1.5rem;
+				position: relative;
+			}
+
+			.solution-features li::before {
+				content: "✓";
+				position: absolute;
+				left: 0;
+				color: var(--accent-orange);
+				font-weight: bold;
+			}
+
+			/* Integrations Section */
+			.integrations-list {
+				display: grid;
+				grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+				gap: 1.5rem;
+				margin-bottom: 3rem;
+			}
+
+			.integration-item {
+				background: var(--secondary-bg);
+				padding: 1.5rem;
+				border-radius: 10px;
+				border-left: 4px solid var(--accent-orange);
+				transition: all 0.3s ease;
+			}
+
+			.integration-item:hover {
+				transform: translateX(10px);
+				box-shadow: var(--shadow-teal);
+			}
+
+			.integration-title {
+				font-size: 1.2rem;
+				margin-bottom: 0.5rem;
+				color: var(--text-primary);
+			}
+
+			.integration-description {
+				color: var(--text-muted);
+				font-size: 0.9rem;
+			}
+
+			/* Support Section */
+			.support-features {
+				display: grid;
+				grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+				gap: 2rem;
+				text-align: center;
+			}
+
+			.support-item {
+				padding: 1.5rem;
+			}
+
+			.support-icon {
+				font-size: 2.5rem;
+				color: var(--accent-orange);
+				margin-bottom: 1rem;
+			}
+
+			.support-title {
+				font-size: 1.2rem;
+				margin-bottom: 0.5rem;
+				color: var(--text-primary);
+			}
+
+			.support-description {
+				color: var(--text-muted);
+				font-size: 0.9rem;
+			}
+
+			/* Contact Section */
+			.contact-grid {
+				display: grid;
+				grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+				gap: 2rem;
+				text-align: center;
+			}
+
+			.contact-card {
+				background: var(--secondary-bg);
+				padding: 2rem;
+				border-radius: 15px;
+				border: 1px solid var(--accent-teal);
+				transition: all 0.3s ease;
+			}
+
+			.contact-card:hover {
+				transform: translateY(-5px);
+				box-shadow: var(--shadow-glow);
+				border-color: var(--accent-orange);
+			}
+
+			.contact-icon {
+				font-size: 3rem;
+				color: var(--accent-orange);
+				margin-bottom: 1rem;
+			}
+
+			.contact-title {
+				font-size: 1.5rem;
+				margin-bottom: 1rem;
+				color: var(--text-primary);
+			}
+
+			.contact-link {
+				color: var(--accent-orange);
+				text-decoration: none;
+				font-size: 1.1rem;
+				transition: color 0.3s ease;
+			}
+
+			.contact-link:hover {
+				color: var(--accent-orange-bright);
+			}
+
+			/* Footer */
+			.footer {
+				background: var(--secondary-bg);
+				padding: 2rem;
+				text-align: center;
+				border-top: 1px solid var(--accent-teal);
+			}
+
+			.footer-text {
+				color: var(--text-muted);
+			}
+
+			/* Responsive Design */
+			@media (max-width: 768px) {
+				.btn-group {
+					flex-direction: column;
+					align-items: center;
+				}
+
+				.btn {
+					width: 100%;
+					max-width: 300px;
+				}
+
+				.section {
+					padding: 3rem 1rem;
+				}
+
+				.development-grid,
+				.solutions-grid {
+					grid-template-columns: 1fr;
+				}
+
+				.logo-image {
+					max-width: 200px;
+				}
+			}
+
+			@media (max-width: 480px) {
+				.logo-image {
+					max-width: 150px;
+				}
+
+				.hero-content {
+					padding: 1rem;
+				}
+			}
+
+			/* Scroll animations */
+			.fade-in {
+				opacity: 0;
+				transform: translateY(30px);
+				transition: all 0.6s ease;
+			}
+
+			.fade-in.visible {
+				opacity: 1;
+				transform: translateY(0);
+			}
+		</style>
+	</head>
+	<body>
+		<canvas id="particles-canvas"></canvas>
+
+		<!-- Hero Section -->
+		<section class="hero">
+			<div class="hero-content">
+				<div class="hero-logo">
+					<img
+						src="images/fidelioprogearlogo.jpg"
+						alt="Fidelio Pro Gear Logo"
+						class="logo-image" />
+				</div>
+				<h1>FIDELIO.PRO</h1>
+				<div class="hero-subtitle">Разработка модулей для Fidelio V8</div>
+				<div class="hero-description">
+					Большой опыт интеграций и создания дополнительных модулей.<br />
+					Превращаем ваши идеи в готовые решения для отельного бизнеса.
+				</div>
+				<div class="btn-group">
+					<a
+						href="#development"
+						class="btn btn-primary">
+						🚀 Обсудить проект
+					</a>
+					<a
+						href="#solutions"
+						class="btn btn-secondary">
+						💡 Наши решения
+					</a>
+				</div>
+			</div>
+		</section>
+
+		<!-- Development Section -->
+		<section
+			id="development"
+			class="section fade-in">
+			<h2 class="section-title">Создаем решения для вашего отеля</h2>
+			<p class="section-subtitle">
+				Разрабатываем модули и интеграции, которые автоматизируют
+				бизнес-процессы и повышают эффективность работы
+			</p>
+
+			<div class="development-grid">
+				<div class="feature-card">
+					<div class="feature-icon">⚡</div>
+					<h3 class="feature-title">Разработка модулей</h3>
+					<p class="feature-description">
+						Создаем модули под любые задачи вашего отеля. От простых
+						автоматизаций до сложных бизнес-логик.
+					</p>
+				</div>
+
+				<div class="feature-card">
+					<div class="feature-icon">🔗</div>
+					<h3 class="feature-title">Интеграции</h3>
+					<p class="feature-description">
+						Подключаем Fidelio к внешним системам: POS, CRM, платежные системы,
+						сервисы бронирования.
+					</p>
+				</div>
+
+				<div class="feature-card">
+					<div class="feature-icon">🛠️</div>
+					<h3 class="feature-title">Доработки</h3>
+					<p class="feature-description">
+						Расширяем стандартный функционал Fidelio V8 для решения
+						специфических задач вашего отеля.
+					</p>
+				</div>
+
+				<div class="feature-card">
+					<div class="feature-icon">🤖</div>
+					<h3 class="feature-title">Автоматизация</h3>
+					<p class="feature-description">
+						Автоматизируем рутинные процессы: отчеты, уведомления, обновление
+						данных, контроль операций.
+					</p>
+				</div>
+			</div>
+		</section>
+
+		<!-- Solutions Section -->
+		<section
+			id="solutions"
+			class="section fade-in">
+			<h2 class="section-title">Наши готовые решения</h2>
+			<p class="section-subtitle">
+				Проверенные модули, которые уже работают в отелях наших клиентов
+			</p>
+
+			<div class="solutions-grid">
+				<div class="solution-card">
+					<h3 class="solution-title">Модуль "Завтраки с планшета"</h3>
+					<p class="solution-description">
+						Удобное управление пакетами услуг с мобильных устройств
+					</p>
+					<ul class="solution-features">
+						<li>Работает на любых планшетах</li>
+						<li>Интуитивный интерфейс</li>
+						<li>Учет израсходованных пакетов</li>
+						<li>Сохранение замеров температуры</li>
+					</ul>
+				</div>
+
+				<div class="solution-card">
+					<h3 class="solution-title">Модуль "Профиль брони"</h3>
+					<p class="solution-description">
+						Персональная страница гостя для самообслуживания
+					</p>
+					<ul class="solution-features">
+						<li>Онлайн предоплата и доплата</li>
+						<li>Загрузка документов</li>
+						<li>Заказ дополнительных услуг</li>
+						<li>Указание предпочтений</li>
+					</ul>
+				</div>
+
+				<div class="solution-card">
+					<h3 class="solution-title">Сканирование паспортов</h3>
+					<p class="solution-description">
+						Автоматическое распознавание данных документов
+					</p>
+					<ul class="solution-features">
+						<li>Распознавание паспортов РФ</li>
+						<li>Автозаполнение данных гостя</li>
+						<li>Проверка корректности</li>
+						<li>Архивирование изображений</li>
+					</ul>
+				</div>
+
+				<div class="solution-card">
+					<h3 class="solution-title">Автокоррекция по ИНН</h3>
+					<p class="solution-description">
+						Автоматическое обновление данных компаний
+					</p>
+					<ul class="solution-features">
+						<li>Получение данных из ЕГРЮЛ</li>
+						<li>Автозаполнение реквизитов</li>
+						<li>Склонение ФИО руководителя</li>
+						<li>Формирование договоров</li>
+					</ul>
+				</div>
+			</div>
+		</section>
+
+		<!-- Integrations Section -->
+		<section
+			id="integrations"
+			class="section fade-in">
+			<h2 class="section-title">Интеграции с внешними системами</h2>
+			<p class="section-subtitle">
+				Подключаем Fidelio к любым системам и сервисам
+			</p>
+
+			<div class="integrations-list">
+				<div class="integration-item">
+					<h4 class="integration-title">POS-системы</h4>
+					<p class="integration-description">IIKO, R-Keeper, Poster, УТ-11</p>
+				</div>
+
+				<div class="integration-item">
+					<h4 class="integration-title">Платежные системы</h4>
+					<p class="integration-description">Сбербанк, ВТБ, Тинькофф, PayPal</p>
+				</div>
+
+				<div class="integration-item">
+					<h4 class="integration-title">CRM и маркетинг</h4>
+					<p class="integration-description">Битрикс24, AmoCRM, MailChimp</p>
+				</div>
+
+				<div class="integration-item">
+					<h4 class="integration-title">Системы бронирования</h4>
+					<p class="integration-description">Booking.com, Expedia, Ostrovok</p>
+				</div>
+
+				<div class="integration-item">
+					<h4 class="integration-title">Контроль доступа</h4>
+					<p class="integration-description">СКУД, электронные замки</p>
+				</div>
+
+				<div class="integration-item">
+					<h4 class="integration-title">СМС и уведомления</h4>
+					<p class="integration-description">SMS.ru, Telegram Bot API</p>
+				</div>
+			</div>
+		</section>
+
+		<!-- Support Section -->
+		<section
+			id="support"
+			class="section fade-in">
+			<h2 class="section-title">Техническая поддержка</h2>
+			<p class="section-subtitle">Надежная поддержка всех наших решений</p>
+
+			<div class="support-features">
+				<div class="support-item">
+					<div class="support-icon">🕐</div>
+					<h4 class="support-title">24/7 поддержка</h4>
+					<p class="support-description">
+						Круглосуточная поддержка для клиентов
+					</p>
+				</div>
+
+				<div class="support-item">
+					<div class="support-icon">💬</div>
+					<h4 class="support-title">Консультации</h4>
+					<p class="support-description">
+						Без ограничений по времени и звонкам
+					</p>
+				</div>
+
+				<div class="support-item">
+					<div class="support-icon">⚡</div>
+					<h4 class="support-title">Быстрое решение</h4>
+					<p class="support-description">Оперативное устранение проблем</p>
+				</div>
+
+				<div class="support-item">
+					<div class="support-icon">📱</div>
+					<h4 class="support-title">Удобная связь</h4>
+					<p class="support-description">Telegram, Email</p>
+				</div>
+			</div>
+		</section>
+
+		<!-- Contact Section -->
+		<section
+			id="contact"
+			class="section fade-in">
+			<h2 class="section-title">Связаться с нами</h2>
+			<p class="section-subtitle">
+				Обсудим ваш проект и найдем оптимальное решение<br />
+				<small style="color: var(--text-muted); font-size: 0.9rem">
+					Связь в рабочие дни с 9:00 до 18:00 МСК
+				</small>
+			</p>
+
+			<div class="contact-grid">
+				<div class="contact-card">
+					<div class="contact-icon">📱</div>
+					<h4 class="contact-title">Telegram</h4>
+					<a
+						href="https://t.me/fideliopro"
+						class="contact-link"
+						target="_blank">
+						@fideliopro
+					</a>
+				</div>
+
+				<div class="contact-card">
+					<div class="contact-icon">✉️</div>
+					<h4 class="contact-title">Email</h4>
+					<a
+						href="mailto:fidelio@giorni.ru"
+						class="contact-link">
+						fidelio@giorni.ru
+					</a>
+				</div>
+			</div>
+		</section>
+
+		<!-- Footer -->
+		<footer class="footer">
+			<p class="footer-text">
+				© 2024 Fidelio.pro - Разработка модулей для Fidelio V8
+			</p>
+		</footer>
+
+		<script>
+			// Particles Animation
+			class ParticlesAnimation {
+				constructor() {
+					this.canvas = document.getElementById("particles-canvas");
+					this.ctx = this.canvas.getContext("2d");
+					this.particles = [];
+					this.mouse = { x: 0, y: 0 };
+
+					this.init();
+					this.animate();
+					this.bindEvents();
+				}
+
+				init() {
+					this.resize();
+					this.createParticles();
+				}
+
+				resize() {
+					this.canvas.width = window.innerWidth;
+					this.canvas.height = window.innerHeight;
+				}
+
+				createParticles() {
+					const particleCount = Math.floor(
+						(this.canvas.width * this.canvas.height) / 15000
+					);
+
+					for (let i = 0; i < particleCount; i++) {
+						this.particles.push({
+							x: Math.random() * this.canvas.width,
+							y: Math.random() * this.canvas.height,
+							vx: (Math.random() - 0.5) * 0.5,
+							vy: (Math.random() - 0.5) * 0.5,
+							size: Math.random() * 2 + 1,
+							opacity: Math.random() * 0.5 + 0.2,
+						});
+					}
+				}
+
+				animate() {
+					this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+
+					this.particles.forEach((particle, index) => {
+						// Update position
+						particle.x += particle.vx;
+						particle.y += particle.vy;
+
+						// Mouse interaction
+						const dx = this.mouse.x - particle.x;
+						const dy = this.mouse.y - particle.y;
+						const distance = Math.sqrt(dx * dx + dy * dy);
+
+						if (distance < 100) {
+							const force = (100 - distance) / 100;
+							particle.vx -= (dx / distance) * force * 0.01;
+							particle.vy -= (dy / distance) * force * 0.01;
+						}
+
+						// Boundary check
+						if (particle.x < 0 || particle.x > this.canvas.width)
+							particle.vx *= -1;
+						if (particle.y < 0 || particle.y > this.canvas.height)
+							particle.vy *= -1;
+
+						// Draw particle
+						this.ctx.beginPath();
+						this.ctx.arc(particle.x, particle.y, particle.size, 0, Math.PI * 2);
+						this.ctx.fillStyle = `rgba(255, 87, 34, ${particle.opacity})`;
+						this.ctx.fill();
+
+						// Draw connections
+						this.particles.slice(index + 1).forEach((otherParticle) => {
+							const dx = particle.x - otherParticle.x;
+							const dy = particle.y - otherParticle.y;
+							const distance = Math.sqrt(dx * dx + dy * dy);
+
+							if (distance < 120) {
+								this.ctx.beginPath();
+								this.ctx.moveTo(particle.x, particle.y);
+								this.ctx.lineTo(otherParticle.x, otherParticle.y);
+								this.ctx.strokeStyle = `rgba(77, 208, 225, ${
+									0.3 * (1 - distance / 120)
+								})`;
+								this.ctx.lineWidth = 0.5;
+								this.ctx.stroke();
+							}
+						});
+					});
+
+					requestAnimationFrame(() => this.animate());
+				}
+
+				bindEvents() {
+					window.addEventListener("resize", () => {
+						this.resize();
+						this.particles = [];
+						this.createParticles();
+					});
+
+					window.addEventListener("mousemove", (e) => {
+						this.mouse.x = e.clientX;
+						this.mouse.y = e.clientY;
+					});
+				}
+			}
+
+			// Scroll animations
+			const observerOptions = {
+				threshold: 0.1,
+				rootMargin: "0px 0px -50px 0px",
+			};
+
+			const observer = new IntersectionObserver((entries) => {
+				entries.forEach((entry) => {
+					if (entry.isIntersecting) {
+						entry.target.classList.add("visible");
+					}
+				});
+			}, observerOptions);
+
+			// Initialize
+			document.addEventListener("DOMContentLoaded", () => {
+				// Start particles animation
+				new ParticlesAnimation();
+
+				// Observe elements for scroll animations
+				document.querySelectorAll(".fade-in").forEach((el) => {
+					observer.observe(el);
+				});
+
+				// Smooth scrolling for anchor links
+				document.querySelectorAll('a[href^="#"]').forEach((anchor) => {
+					anchor.addEventListener("click", function (e) {
+						e.preventDefault();
+						const target = document.querySelector(this.getAttribute("href"));
+						if (target) {
+							target.scrollIntoView({
+								behavior: "smooth",
+							});
+						}
+					});
+				});
+			});
+		</script>
+	</body>
+</html>

@@ -1,0 +1,38 @@
+version: "3.8"
+
+services:
+  fideliopro:
+    build: .
+    container_name: fideliopro_app
+    restart: unless-stopped
+    ports:
+      - "7080:7080"
+    volumes:
+      - type: volume
+        source: fideliopro_data
+        target: /app/data
+    environment:
+      - DEBUG=false
+      - HOST=0.0.0.0
+      - PORT=7080
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:7080/health/json"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.fideliopro.rule=Host(`fidelio.pro`) || Host(`www.fidelio.pro`)"
+      - "traefik.http.routers.fideliopro.entrypoints=web"
+      - "traefik.http.services.fideliopro.loadbalancer.server.port=7080"
+    networks:
+      - traefik-network
+
+volumes:
+  fideliopro_data:
+    external: true
+
+networks:
+  traefik-network:
+    external: true

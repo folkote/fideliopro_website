@@ -1,0 +1,663 @@
+<!DOCTYPE html>
+<html lang="ru">
+	<head>
+		<meta charset="UTF-8" />
+		<meta
+			name="viewport"
+			content="width=device-width, initial-scale=1.0" />
+		<title>Health Status - Fidelio.pro</title>
+		<link
+			rel="shortcut icon"
+			href="images/logo-100x89.png"
+			type="image/x-icon" />
+
+		<style>
+			:root {
+				--primary-bg: #1e2a3a;
+				--secondary-bg: #2c3e50;
+				--accent-teal: #4dd0e1;
+				--accent-teal-light: #80deea;
+				--accent-teal-dark: #26a69a;
+				--accent-orange: #ff5722;
+				--accent-orange-bright: #ff6f00;
+				--accent-green: #4caf50;
+				--accent-red: #f44336;
+				--accent-yellow: #ff9800;
+				--text-primary: #ffffff;
+				--text-secondary: #e8e8e8;
+				--text-muted: #b0b0b0;
+				--gradient-primary: linear-gradient(
+					135deg,
+					var(--accent-teal) 0%,
+					var(--primary-bg) 100%
+				);
+				--gradient-orange: linear-gradient(
+					135deg,
+					var(--accent-orange) 0%,
+					var(--accent-orange-bright) 100%
+				);
+				--shadow-glow: 0 0 30px rgba(255, 87, 34, 0.3);
+				--shadow-teal: 0 0 20px rgba(77, 208, 225, 0.4);
+				--shadow-green: 0 0 20px rgba(76, 175, 80, 0.4);
+				--shadow-red: 0 0 20px rgba(244, 67, 54, 0.4);
+			}
+
+			* {
+				margin: 0;
+				padding: 0;
+				box-sizing: border-box;
+			}
+
+			body {
+				font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+				background: var(--primary-bg);
+				color: var(--text-primary);
+				line-height: 1.6;
+				overflow-x: hidden;
+				min-height: 100vh;
+				display: flex;
+				flex-direction: column;
+			}
+
+			/* Particles Background */
+			#particles-canvas {
+				position: fixed;
+				top: 0;
+				left: 0;
+				width: 100%;
+				height: 100%;
+				z-index: -1;
+				opacity: 0.6;
+			}
+
+			/* Header */
+			.header {
+				background: var(--secondary-bg);
+				padding: 1rem 2rem;
+				border-bottom: 1px solid var(--accent-teal);
+				display: flex;
+				align-items: center;
+				gap: 1rem;
+			}
+
+			.logo {
+				width: 50px;
+				height: auto;
+				border-radius: 8px;
+			}
+
+			.header-title {
+				font-size: 1.5rem;
+				color: var(--text-primary);
+				margin: 0;
+			}
+
+			.header-subtitle {
+				color: var(--text-muted);
+				font-size: 0.9rem;
+				margin-left: auto;
+			}
+
+			/* Main Content */
+			.main-content {
+				flex: 1;
+				padding: 2rem;
+				max-width: 1200px;
+				margin: 0 auto;
+				width: 100%;
+			}
+
+			.health-container {
+				background: var(--secondary-bg);
+				border-radius: 20px;
+				padding: 2rem;
+				border: 1px solid var(--accent-teal);
+				box-shadow: var(--shadow-teal);
+				margin-bottom: 2rem;
+			}
+
+			.status-header {
+				text-align: center;
+				margin-bottom: 2rem;
+			}
+
+			.status-title {
+				font-size: 2.5rem;
+				margin-bottom: 0.5rem;
+				background: var(--gradient-orange);
+				-webkit-background-clip: text;
+				-webkit-text-fill-color: transparent;
+				background-clip: text;
+			}
+
+			.status-badge {
+				display: inline-block;
+				padding: 0.5rem 1.5rem;
+				border-radius: 25px;
+				font-weight: 600;
+				font-size: 1.1rem;
+				text-transform: uppercase;
+				letter-spacing: 1px;
+				margin-bottom: 1rem;
+			}
+
+			.status-healthy {
+				background: var(--accent-green);
+				color: white;
+				box-shadow: var(--shadow-green);
+			}
+
+			.status-degraded {
+				background: var(--accent-yellow);
+				color: var(--primary-bg);
+			}
+
+			.status-unhealthy {
+				background: var(--accent-red);
+				color: white;
+				box-shadow: var(--shadow-red);
+			}
+
+			.status-info {
+				display: grid;
+				grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+				gap: 1rem;
+				margin-bottom: 2rem;
+			}
+
+			.info-card {
+				background: var(--primary-bg);
+				padding: 1rem;
+				border-radius: 10px;
+				border-left: 4px solid var(--accent-orange);
+				text-align: center;
+			}
+
+			.info-label {
+				color: var(--text-muted);
+				font-size: 0.9rem;
+				margin-bottom: 0.5rem;
+			}
+
+			.info-value {
+				color: var(--text-primary);
+				font-size: 1.1rem;
+				font-weight: 600;
+			}
+
+			/* Services Grid */
+			.services-title {
+				font-size: 1.8rem;
+				margin-bottom: 1.5rem;
+				color: var(--text-primary);
+				text-align: center;
+			}
+
+			.services-grid {
+				display: grid;
+				grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+				gap: 1.5rem;
+			}
+
+			.service-card {
+				background: var(--primary-bg);
+				border-radius: 15px;
+				padding: 1.5rem;
+				border: 1px solid var(--accent-teal);
+				transition: all 0.3s ease;
+				position: relative;
+				overflow: hidden;
+			}
+
+			.service-card::before {
+				content: "";
+				position: absolute;
+				top: 0;
+				left: -100%;
+				width: 100%;
+				height: 100%;
+				background: linear-gradient(
+					90deg,
+					transparent,
+					rgba(255, 87, 34, 0.1),
+					transparent
+				);
+				transition: left 0.5s ease;
+			}
+
+			.service-card:hover::before {
+				left: 100%;
+			}
+
+			.service-card:hover {
+				transform: translateY(-5px);
+				box-shadow: var(--shadow-teal);
+			}
+
+			.service-header {
+				display: flex;
+				align-items: center;
+				justify-content: space-between;
+				margin-bottom: 1rem;
+			}
+
+			.service-name {
+				font-size: 1.2rem;
+				font-weight: 600;
+				color: var(--text-primary);
+			}
+
+			.service-status {
+				padding: 0.3rem 0.8rem;
+				border-radius: 15px;
+				font-size: 0.8rem;
+				font-weight: 600;
+				text-transform: uppercase;
+			}
+
+			.service-healthy {
+				background: var(--accent-green);
+				color: white;
+			}
+
+			.service-unhealthy {
+				background: var(--accent-red);
+				color: white;
+			}
+
+			.service-icon {
+				font-size: 2rem;
+				margin-bottom: 0.5rem;
+			}
+
+			.service-description {
+				color: var(--text-muted);
+				font-size: 0.9rem;
+			}
+
+			/* Refresh Button */
+			.refresh-container {
+				text-align: center;
+				margin-top: 2rem;
+			}
+
+			.refresh-btn {
+				background: var(--gradient-orange);
+				color: var(--primary-bg);
+				border: none;
+				padding: 0.8rem 2rem;
+				border-radius: 25px;
+				font-size: 1rem;
+				font-weight: 600;
+				cursor: pointer;
+				transition: all 0.3s ease;
+				box-shadow: var(--shadow-glow);
+			}
+
+			.refresh-btn:hover {
+				transform: translateY(-2px);
+				box-shadow: 0 10px 30px rgba(255, 87, 34, 0.5);
+			}
+
+			.refresh-btn:disabled {
+				opacity: 0.6;
+				cursor: not-allowed;
+				transform: none;
+			}
+
+			/* Loading Animation */
+			.loading {
+				display: inline-block;
+				width: 20px;
+				height: 20px;
+				border: 3px solid var(--primary-bg);
+				border-radius: 50%;
+				border-top-color: transparent;
+				animation: spin 1s ease-in-out infinite;
+				margin-right: 0.5rem;
+			}
+
+			@keyframes spin {
+				to {
+					transform: rotate(360deg);
+				}
+			}
+
+			/* Footer */
+			.footer {
+				background: var(--secondary-bg);
+				padding: 1rem 2rem;
+				text-align: center;
+				border-top: 1px solid var(--accent-teal);
+				color: var(--text-muted);
+				font-size: 0.9rem;
+			}
+
+			/* Responsive */
+			@media (max-width: 768px) {
+				.main-content {
+					padding: 1rem;
+				}
+
+				.health-container {
+					padding: 1.5rem;
+				}
+
+				.status-title {
+					font-size: 2rem;
+				}
+
+				.services-grid {
+					grid-template-columns: 1fr;
+				}
+			}
+
+			/* Animations */
+			.fade-in {
+				opacity: 0;
+				transform: translateY(20px);
+				animation: fadeInUp 0.6s ease-out forwards;
+			}
+
+			@keyframes fadeInUp {
+				to {
+					opacity: 1;
+					transform: translateY(0);
+				}
+			}
+
+			.pulse {
+				animation: pulse 2s infinite;
+			}
+
+			@keyframes pulse {
+				0%,
+				100% {
+					opacity: 1;
+				}
+				50% {
+					opacity: 0.7;
+				}
+			}
+		</style>
+	</head>
+	<body>
+		<canvas id="particles-canvas"></canvas>
+
+		<!-- Header -->
+		<header class="header">
+			<img
+				src="images/logo-100x89.png"
+				alt="Fidelio Pro Logo"
+				class="logo" />
+			<h1 class="header-title">Health Status</h1>
+			<div
+				class="header-subtitle"
+				id="last-updated">
+				Загрузка...
+			</div>
+		</header>
+
+		<!-- Main Content -->
+		<main class="main-content">
+			<div class="health-container fade-in">
+				<div class="status-header">
+					<h2 class="status-title">Статус системы</h2>
+					<div
+						class="status-badge"
+						id="overall-status">
+						Проверка...
+					</div>
+					<div
+						id="status-message"
+						class="status-message"></div>
+				</div>
+
+				<div class="status-info">
+					<div class="info-card">
+						<div class="info-label">Версия</div>
+						<div
+							class="info-value"
+							id="app-version">
+							-
+						</div>
+					</div>
+					<div class="info-card">
+						<div class="info-label">Время проверки</div>
+						<div
+							class="info-value"
+							id="check-time">
+							-
+						</div>
+					</div>
+					<div class="info-card">
+						<div class="info-label">Uptime</div>
+						<div
+							class="info-value"
+							id="uptime">
+							-
+						</div>
+					</div>
+				</div>
+
+				<h3 class="services-title">Состояние сервисов</h3>
+				<div
+					class="services-grid"
+					id="services-grid">
+					<!-- Services will be loaded here -->
+				</div>
+
+				<div class="refresh-container">
+					<button
+						class="refresh-btn"
+						id="refresh-btn"
+						onclick="loadHealthData()">
+						🔄 Обновить статус
+					</button>
+				</div>
+			</div>
+		</main>
+
+		<!-- Footer -->
+		<footer class="footer">
+			<p>© 2024 Fidelio.pro - Health Monitoring Dashboard</p>
+		</footer>
+
+		<script>
+			// Particles Animation (simplified version)
+			class ParticlesAnimation {
+				constructor() {
+					this.canvas = document.getElementById("particles-canvas");
+					this.ctx = this.canvas.getContext("2d");
+					this.particles = [];
+					this.init();
+					this.animate();
+				}
+
+				init() {
+					this.canvas.width = window.innerWidth;
+					this.canvas.height = window.innerHeight;
+
+					const particleCount = Math.floor(
+						(this.canvas.width * this.canvas.height) / 20000
+					);
+					for (let i = 0; i < particleCount; i++) {
+						this.particles.push({
+							x: Math.random() * this.canvas.width,
+							y: Math.random() * this.canvas.height,
+							vx: (Math.random() - 0.5) * 0.3,
+							vy: (Math.random() - 0.5) * 0.3,
+							size: Math.random() * 1.5 + 0.5,
+							opacity: Math.random() * 0.3 + 0.1,
+						});
+					}
+				}
+
+				animate() {
+					this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+
+					this.particles.forEach((particle) => {
+						particle.x += particle.vx;
+						particle.y += particle.vy;
+
+						if (particle.x < 0 || particle.x > this.canvas.width)
+							particle.vx *= -1;
+						if (particle.y < 0 || particle.y > this.canvas.height)
+							particle.vy *= -1;
+
+						this.ctx.beginPath();
+						this.ctx.arc(particle.x, particle.y, particle.size, 0, Math.PI * 2);
+						this.ctx.fillStyle = `rgba(255, 87, 34, ${particle.opacity})`;
+						this.ctx.fill();
+					});
+
+					requestAnimationFrame(() => this.animate());
+				}
+			}
+
+			// Health data management
+			let startTime = Date.now();
+
+			const serviceIcons = {
+				dadata: "🏢",
+				geolocation: "🌍",
+				cache: "💾",
+				database: "🗄️",
+				api: "🔌",
+			};
+
+			const serviceDescriptions = {
+				dadata: "Сервис очистки адресов DaData",
+				geolocation: "Сервис геолокации по IP",
+				cache: "Файловый кэш системы",
+				database: "База данных",
+				api: "API интерфейс",
+			};
+
+			async function loadHealthData() {
+				const refreshBtn = document.getElementById("refresh-btn");
+				const originalText = refreshBtn.innerHTML;
+
+				refreshBtn.disabled = true;
+				refreshBtn.innerHTML = '<span class="loading"></span>Проверка...';
+
+				try {
+					const response = await fetch("/health/json");
+					const data = await response.json();
+
+					updateHealthDisplay(data);
+					updateLastUpdated();
+				} catch (error) {
+					console.error("Error loading health data:", error);
+					showError("Ошибка загрузки данных о состоянии системы");
+				} finally {
+					refreshBtn.disabled = false;
+					refreshBtn.innerHTML = originalText;
+				}
+			}
+
+			function updateHealthDisplay(data) {
+				// Update overall status
+				const statusBadge = document.getElementById("overall-status");
+				const statusClass = `status-${data.status}`;
+				statusBadge.className = `status-badge ${statusClass}`;
+
+				const statusText = {
+					healthy: "Все работает",
+					degraded: "Частичные проблемы",
+					unhealthy: "Есть проблемы",
+				};
+
+				statusBadge.textContent = statusText[data.status] || data.status;
+
+				// Update info cards
+				document.getElementById("app-version").textContent =
+					data.version || "-";
+				document.getElementById("check-time").textContent = new Date(
+					data.timestamp
+				).toLocaleString("ru-RU");
+				document.getElementById("uptime").textContent = formatUptime(
+					Date.now() - startTime
+				);
+
+				// Update services
+				updateServicesGrid(data.services || {});
+			}
+
+			function updateServicesGrid(services) {
+				const grid = document.getElementById("services-grid");
+				grid.innerHTML = "";
+
+				Object.entries(services).forEach(([serviceName, status]) => {
+					const serviceCard = document.createElement("div");
+					serviceCard.className = "service-card";
+
+					const icon = serviceIcons[serviceName] || "⚙️";
+					const description =
+						serviceDescriptions[serviceName] || `Сервис ${serviceName}`;
+					const statusClass =
+						status === "healthy" ? "service-healthy" : "service-unhealthy";
+					const statusText = status === "healthy" ? "Работает" : "Проблема";
+
+					serviceCard.innerHTML = `
+                    <div class="service-header">
+                        <div class="service-name">${serviceName}</div>
+                        <div class="service-status ${statusClass}">${statusText}</div>
+                    </div>
+                    <div class="service-icon">${icon}</div>
+                    <div class="service-description">${description}</div>
+                `;
+
+					grid.appendChild(serviceCard);
+				});
+			}
+
+			function updateLastUpdated() {
+				const now = new Date();
+				document.getElementById(
+					"last-updated"
+				).textContent = `Обновлено: ${now.toLocaleTimeString("ru-RU")}`;
+			}
+
+			function formatUptime(ms) {
+				const seconds = Math.floor(ms / 1000);
+				const minutes = Math.floor(seconds / 60);
+				const hours = Math.floor(minutes / 60);
+				const days = Math.floor(hours / 24);
+
+				if (days > 0) return `${days}д ${hours % 24}ч`;
+				if (hours > 0) return `${hours}ч ${minutes % 60}м`;
+				if (minutes > 0) return `${minutes}м ${seconds % 60}с`;
+				return `${seconds}с`;
+			}
+
+			function showError(message) {
+				const statusBadge = document.getElementById("overall-status");
+				statusBadge.className = "status-badge status-unhealthy";
+				statusBadge.textContent = "Ошибка";
+
+				document.getElementById("services-grid").innerHTML = `
+                <div style="grid-column: 1 / -1; text-align: center; color: var(--accent-red); padding: 2rem;">
+                    ❌ ${message}
+                </div>
+            `;
+			}
+
+			// Auto-refresh every 30 seconds
+			setInterval(loadHealthData, 30000);
+
+			// Initialize
+			document.addEventListener("DOMContentLoaded", () => {
+				new ParticlesAnimation();
+				loadHealthData();
+
+				// Handle window resize for particles
+				window.addEventListener("resize", () => {
+					const canvas = document.getElementById("particles-canvas");
+					canvas.width = window.innerWidth;
+					canvas.height = window.innerHeight;
+				});
+			});
+		</script>
+	</body>
+</html>
