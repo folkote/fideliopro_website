@@ -24,8 +24,11 @@ services:
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.fideliopro.rule=Host(`fidelio.pro`) || Host(`www.fidelio.pro`)"
-      - "traefik.http.routers.fideliopro.entrypoints=web"
+      - "traefik.http.routers.fideliopro.entrypoints=websecure"
+      - "traefik.http.routers.fideliopro.tls=true"
+      - "traefik.http.routers.fideliopro.tls.certresolver=le"
       - "traefik.http.services.fideliopro.loadbalancer.server.port=7080"
+      - "traefik.http.services.fideliopro.loadbalancer.server.scheme=http"
     networks:
       - traefik-network
 

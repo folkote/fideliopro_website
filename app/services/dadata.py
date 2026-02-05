@@ -40,6 +40,8 @@ class DaDataService:
         self.logger = logger_instance
         self.base_url = "https://cleaner.dadata.ru/api/v1/clean"
         self.session: Optional[aiohttp.ClientSession] = None
+        self._health_check_cache: Optional[bool] = None
+        self._health_check_timestamp: float = 0
 
         # Validate configuration
         if not settings.dadata_token or not settings.dadata_secret:
@@ -225,17 +227,44 @@ class DaDataService:
     async def health_check(self) -> bool:
         """
         Check if DaData service is available.
+        
+        Uses cached result for 5 minutes to avoid repeated API calls.
+        Each health check call costs money, so we cache the result.
 
         Returns:
             True if service is healthy, False otherwise
         """
+        import time
+        
+        current_time = time.time()
+        # Cache health check result for 5 minutes (300 seconds)
+        if self._health_check_cache is not None and (current_time - self._health_check_timestamp) < 300:
+            return self._health_check_cache
+        
         try:
-            # Try to clean a simple test address
-            test_result = await self.clean_address("Москва")
-            return test_result is not None
+            # Check if credentials are configured (no API call needed)
+            if not settings.dadata_token or not settings.dadata_secret:
+                self._health_check_cache = False
+                self._health_check_timestamp = current_time
+                return False
+            
+            # Check if session can be initialized (no API call)
+            await self.initialize()
+            
+            if not self.session:
+                self._health_check_cache = False
+                self._health_check_timestamp = current_time
+                return False
+            
+            # Service is healthy if we can initialize it
+            self._health_check_cache = True
+            self._health_check_timestamp = current_time
+            return True
 
         except Exception as e:
             self.logger.error("DaData health check failed", error=str(e))
+            self._health_check_cache = False
+            self._health_check_timestamp = current_time
             return False
 
 
