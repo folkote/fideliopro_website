@@ -2,9 +2,16 @@
 Run script for FidelioPro FastAPI application.
 """
 
+import asyncio
 import socket
+import sys
+
 import uvicorn
 from app.config import settings
+
+# psycopg3 requires SelectorEventLoop; on Windows the default is ProactorEventLoop
+if sys.platform == "win32":
+    asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
 
 
 def get_local_ip():

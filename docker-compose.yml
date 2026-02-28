@@ -5,16 +5,16 @@ services:
     build: .
     container_name: fideliopro_app
     restart: unless-stopped
+    env_file:
+      - .env
     ports:
-      - "7080:7080"
-    volumes:
-      - //10.0.0.10/ai_fidelio/fidelio_pro_website_cache:/app/data
+      - "80:80"
     environment:
       - DEBUG=false
       - HOST=0.0.0.0
-      - PORT=7080
+      - PORT=80
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:7080/health/json"]
+      test: ["CMD", "curl", "-f", "http://localhost:80/health/json"]
       interval: 30s
       timeout: 10s
       retries: 3

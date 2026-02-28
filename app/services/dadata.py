@@ -3,34 +3,13 @@ DaData API service for address cleaning and validation.
 """
 
 import asyncio
-import json
-import os
 from typing import Optional, Dict, Any
 import aiohttp
 from structlog.typing import FilteringBoundLogger
 
 from ..config import settings
 from ..utils.logger import logger, safe_log_data
-
-
-def load_cache(cache_file: str) -> Dict[str, Any]:
-    """Load cache from JSON file."""
-    try:
-        if os.path.exists(cache_file):
-            with open(cache_file, "r", encoding="utf-8") as f:
-                return json.load(f)
-    except (UnicodeDecodeError, json.JSONDecodeError) as e:
-        logger.error("Error reading cache file", cache_file=cache_file, error=str(e))
-    return {}
-
-
-def save_cache(cache_file: str, cache: Dict[str, Any]) -> None:
-    """Save cache to JSON file."""
-    try:
-        with open(cache_file, "w", encoding="utf-8") as f:
-            json.dump(cache, f, ensure_ascii=False, indent=4)
-    except IOError as e:
-        logger.error("Error writing to cache file", cache_file=cache_file, error=str(e))
+from .cache import cache_service
 
 
 class DaDataService:
@@ -40,8 +19,6 @@ class DaDataService:
         self.logger = logger_instance
         self.base_url = "https://cleaner.dadata.ru/api/v1/clean"
         self.session: Optional[aiohttp.ClientSession] = None
-        self._health_check_cache: Optional[bool] = None
-        self._health_check_timestamp: float = 0
 
         # Validate configuration
         if not settings.dadata_token or not settings.dadata_secret:
@@ -158,19 +135,17 @@ class DaDataService:
         Returns:
             Street FIAS ID or None if not found
         """
-        cache_file = "address_cache.json"
-        cache = load_cache(cache_file)
-
-        if address in cache:
+        cache_key = f"dadata:street_fias_id:{address}"
+        cached_value = await cache_service.get(cache_key)
+        if cached_value is not None:
             self.logger.info("Cache hit for address", address=address[:50])
-            return cache[address]
+            return str(cached_value)
 
         result = await self.clean_address(address)
 
         if result and "street_fias_id" in result:
             street_fias_id = result["street_fias_id"]
-            cache[address] = street_fias_id
-            save_cache(cache_file, cache)
+            await cache_service.set(cache_key, street_fias_id)
             self.logger.info(
                 "Address cached",
                 source=result.get("source", "")[:50],
@@ -202,19 +177,17 @@ class DaDataService:
         Returns:
             Cleaned address text or None if failed
         """
-        cache_file = "fulladdress_cache.json"
-        cache = load_cache(cache_file)
-
-        if address in cache:
+        cache_key = f"dadata:cleaned_text:{address}"
+        cached_value = await cache_service.get(cache_key)
+        if cached_value is not None:
             self.logger.info("Cache hit for full address", address=address[:50])
-            return cache[address]
+            return str(cached_value)
 
         result = await self.clean_address(address)
 
         if result and "result" in result:
             cleaned_address = result["result"]
-            cache[address] = cleaned_address
-            save_cache(cache_file, cache)
+            await cache_service.set(cache_key, cleaned_address)
             self.logger.info(
                 "Full address cached",
                 source=result.get("source", "")[:50],
@@ -227,44 +200,17 @@ class DaDataService:
     async def health_check(self) -> bool:
         """
         Check if DaData service is available.
-        
-        Uses cached result for 5 minutes to avoid repeated API calls.
-        Each health check call costs money, so we cache the result.
 
         Returns:
             True if service is healthy, False otherwise
         """
-        import time
-        
-        current_time = time.time()
-        # Cache health check result for 5 minutes (300 seconds)
-        if self._health_check_cache is not None and (current_time - self._health_check_timestamp) < 300:
-            return self._health_check_cache
-        
         try:
-            # Check if credentials are configured (no API call needed)
-            if not settings.dadata_token or not settings.dadata_secret:
-                self._health_check_cache = False
-                self._health_check_timestamp = current_time
-                return False
-            
-            # Check if session can be initialized (no API call)
-            await self.initialize()
-            
-            if not self.session:
-                self._health_check_cache = False
-                self._health_check_timestamp = current_time
-                return False
-            
-            # Service is healthy if we can initialize it
-            self._health_check_cache = True
-            self._health_check_timestamp = current_time
-            return True
+            # Try to clean a simple test address
+            test_result = await self.clean_address("Москва")
+            return test_result is not None
 
         except Exception as e:
             self.logger.error("DaData health check failed", error=str(e))
-            self._health_check_cache = False
-            self._health_check_timestamp = current_time
             return False
 
 

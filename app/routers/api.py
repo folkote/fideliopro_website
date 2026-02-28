@@ -11,6 +11,7 @@ from ..models.requests import AddressRequest
 from ..models.responses import ErrorResponse, HealthResponse
 from ..services.dadata import dadata_service
 from ..services.geolocation import geolocation_service
+from ..services.cache import cache_service
 from ..utils.logger import logger, safe_log_data
 from datetime import datetime
 
@@ -216,8 +217,8 @@ async def health_check_json():
         # Check geolocation service
         geolocation_healthy = await geolocation_service.health_check()
 
-        # Check cache service (always healthy for file cache)
-        cache_healthy = True
+        # Check cache service
+        cache_healthy = await cache_service.health_check()
 
         services = {
             "dadata": "healthy" if dadata_healthy else "unhealthy",

@@ -1,2 +1,33 @@
-app/__pycache__/
+# Environment — содержит секреты, не коммитить
+.env
+
+# Python
+venv/
+.venv/
+__pycache__/
 *.pyc
+*.pyo
+*.pyd
+*.pyw
+
+# Логи
+logs/
+
+# Файловый кэш (данные мигрированы в PostgreSQL)
+cache/
+address_cache.json
+fulladdress_cache.json
+
+# Сборка / дистрибутив
+*.egg-info/
+dist/
+build/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo

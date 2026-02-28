@@ -2,7 +2,6 @@
 Configuration settings for FidelioPro FastAPI application.
 """
 
-import os
 from typing import Optional
 from pydantic_settings import BaseSettings
 
@@ -31,9 +30,12 @@ class Settings(BaseSettings):
 
     # Cache settings
     cache_enabled: bool = True
-    cache_type: str = "file"  # "file" or "redis"
+    cache_type: str = "postgres"  # "postgres", "redis" or "file"
     cache_ttl: int = 3600  # 1 hour
-    cache_dir: str = "data/cache"
+    cache_dir: str = "cache"
+    database_url: Optional[str] = None
+    cache_db_schema: str = "public"
+    cache_db_table: str = "cache_entries"
 
     # Redis settings (if using Redis cache)
     redis_url: Optional[str] = None
@@ -44,7 +46,7 @@ class Settings(BaseSettings):
 
     # Logging settings
     log_level: str = "INFO"
-    log_file: str = "data/logs/webserver.log"
+    log_file: str = "logs/webserver.log"
     log_max_size: int = 10 * 1024 * 1024  # 10MB
     log_backup_count: int = 5
 
