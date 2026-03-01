@@ -207,7 +207,6 @@ def migrate_geolocation_file_cache(conn: psycopg.Connection) -> None:
         return
 
     rows = []
-    skipped_expired = 0
     for f in files:
         # Extract IP from filename: geolocation_1.2.3.4.json → 1.2.3.4
         ip = f.stem[len("geolocation_"):]
@@ -219,11 +218,7 @@ def migrate_geolocation_file_cache(conn: psycopg.Connection) -> None:
         except (json.JSONDecodeError, OSError):
             continue
 
-        # Skip expired geolocation data (time-sensitive)
-        if is_expired(entry.get("expires_at")):
-            skipped_expired += 1
-            continue
-
+        # IP→location mapping is stable — ignore expires_at
         value = entry.get("value", {})
         if not isinstance(value, dict):
             continue
@@ -237,8 +232,7 @@ def migrate_geolocation_file_cache(conn: psycopg.Connection) -> None:
     inserted, skipped = insert_batch(conn, rows)
     print(
         f"[cache/geolocation_*]     files={len(files):>6}  "
-        f"rows={len(rows):>6}  inserted={inserted:>6}  skipped_dup={skipped:>6}  "
-        f"skipped_expired={skipped_expired}"
+        f"rows={len(rows):>6}  inserted={inserted:>6}  skipped_dup={skipped:>6}"
     )
 
 
