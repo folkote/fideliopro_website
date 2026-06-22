@@ -3,13 +3,19 @@ DaData API service for address cleaning and validation.
 """
 
 import asyncio
-from typing import Optional, Dict, Any
+import time
+from typing import Any, Dict, Optional
+
 import aiohttp
 from structlog.typing import FilteringBoundLogger
 
 from ..config import settings
 from ..utils.logger import logger, safe_log_data
 from .cache import cache_service
+
+
+DADATA_STREET_FIAS_NAMESPACE = "dadata_street_fias"
+DADATA_CLEANED_ADDRESS_NAMESPACE = "dadata_cleaned_address"
 
 
 class DaDataService:
@@ -19,6 +25,8 @@ class DaDataService:
         self.logger = logger_instance
         self.base_url = "https://cleaner.dadata.ru/api/v1/clean"
         self.session: Optional[aiohttp.ClientSession] = None
+        self._health_check_cache: Optional[bool] = None
+        self._health_check_timestamp: float = 0.0
 
         # Validate configuration
         if not settings.dadata_token or not settings.dadata_secret:
@@ -135,17 +143,25 @@ class DaDataService:
         Returns:
             Street FIAS ID or None if not found
         """
-        cache_key = f"dadata:street_fias_id:{address}"
-        cached_value = await cache_service.get(cache_key)
-        if cached_value is not None:
+        cached_fias_id = await cache_service.get(
+            address,
+            namespace=DADATA_STREET_FIAS_NAMESPACE,
+        )
+
+        if cached_fias_id is not None:
             self.logger.info("Cache hit for address", address=address[:50])
-            return str(cached_value)
+            return str(cached_fias_id)
 
         result = await self.clean_address(address)
 
         if result and "street_fias_id" in result:
             street_fias_id = result["street_fias_id"]
-            await cache_service.set(cache_key, street_fias_id)
+            await cache_service.set(
+                address,
+                street_fias_id,
+                namespace=DADATA_STREET_FIAS_NAMESPACE,
+                source="dadata-clean-address",
+            )
             self.logger.info(
                 "Address cached",
                 source=result.get("source", "")[:50],
@@ -177,17 +193,25 @@ class DaDataService:
         Returns:
             Cleaned address text or None if failed
         """
-        cache_key = f"dadata:cleaned_text:{address}"
-        cached_value = await cache_service.get(cache_key)
-        if cached_value is not None:
+        cached_cleaned_address = await cache_service.get(
+            address,
+            namespace=DADATA_CLEANED_ADDRESS_NAMESPACE,
+        )
+
+        if cached_cleaned_address is not None:
             self.logger.info("Cache hit for full address", address=address[:50])
-            return str(cached_value)
+            return str(cached_cleaned_address)
 
         result = await self.clean_address(address)
 
         if result and "result" in result:
             cleaned_address = result["result"]
-            await cache_service.set(cache_key, cleaned_address)
+            await cache_service.set(
+                address,
+                cleaned_address,
+                namespace=DADATA_CLEANED_ADDRESS_NAMESPACE,
+                source="dadata-clean-address",
+            )
             self.logger.info(
                 "Full address cached",
                 source=result.get("source", "")[:50],
@@ -201,16 +225,30 @@ class DaDataService:
         """
         Check if DaData service is available.
 
+        Uses an in-memory status memo for 5 minutes to avoid repeated API calls.
+        Each health check call costs money, so we cache the result.
+
         Returns:
             True if service is healthy, False otherwise
         """
+        current_time = time.time()
+        if (
+            self._health_check_cache is not None
+            and (current_time - self._health_check_timestamp) < 300
+        ):
+            return self._health_check_cache
+
         try:
             # Try to clean a simple test address
             test_result = await self.clean_address("Москва")
-            return test_result is not None
+            self._health_check_cache = test_result is not None
+            self._health_check_timestamp = current_time
+            return self._health_check_cache
 
         except Exception as e:
             self.logger.error("DaData health check failed", error=str(e))
+            self._health_check_cache = False
+            self._health_check_timestamp = current_time
             return False
 
 

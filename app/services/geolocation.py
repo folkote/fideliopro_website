@@ -65,9 +65,11 @@ class GeolocationService:
         if self._is_private_ip(ip):
             return {"country": "Local", "city": "Local", "isp": "Local"}
 
-        # Check cache first
-        cache_key = f"geolocation_{ip}"
-        cached_result = await cache_service.get(cache_key)
+        # Check PostgreSQL cache first. The raw IP is the key inside the
+        # geolocation namespace; old geolocation_<ip> file keys are normalized
+        # by the import script.
+        cache_key = ip
+        cached_result = await cache_service.get(cache_key, namespace="geolocation")
         if cached_result:
             self.logger.debug("Geolocation cache hit", ip=ip)
             return cached_result
@@ -77,8 +79,13 @@ class GeolocationService:
             try:
                 result = await self._query_service(ip, service)
                 if result and any(result.values()):
-                    # Cache successful result
-                    await cache_service.set(cache_key, result, ttl=settings.cache_ttl)
+                    # Cache successful result permanently; PostgreSQL cache has no TTL.
+                    await cache_service.set(
+                        cache_key,
+                        result,
+                        namespace="geolocation",
+                        source=service["name"],
+                    )
                     return result
 
             except Exception as e:
@@ -94,8 +101,13 @@ class GeolocationService:
         empty_result = {"country": "", "city": "", "isp": ""}
         self.logger.warning("All geolocation services failed", ip=ip)
 
-        # Cache empty result for shorter time to retry sooner
-        await cache_service.set(cache_key, empty_result, ttl=300)  # 5 minutes
+        # Cache empty result permanently. The cache is append-only by business rule.
+        await cache_service.set(
+            cache_key,
+            empty_result,
+            namespace="geolocation",
+            source="geolocation-fallback-empty",
+        )
 
         return empty_result
 

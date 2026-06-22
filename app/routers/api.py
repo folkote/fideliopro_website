@@ -2,6 +2,7 @@
 API routers for address cleaning endpoints.
 """
 
+import asyncio
 from typing import Union
 from fastapi import APIRouter, HTTPException, Query, Depends
 from fastapi.responses import PlainTextResponse, HTMLResponse
@@ -9,9 +10,9 @@ from fastapi.responses import PlainTextResponse, HTMLResponse
 from ..config import settings
 from ..models.requests import AddressRequest
 from ..models.responses import ErrorResponse, HealthResponse
+from ..services.cache import cache_service
 from ..services.dadata import dadata_service
 from ..services.geolocation import geolocation_service
-from ..services.cache import cache_service
 from ..utils.logger import logger, safe_log_data
 from datetime import datetime
 
@@ -217,7 +218,7 @@ async def health_check_json():
         # Check geolocation service
         geolocation_healthy = await geolocation_service.health_check()
 
-        # Check cache service
+        # Check PostgreSQL cache service
         cache_healthy = await cache_service.health_check()
 
         services = {
@@ -253,12 +254,37 @@ async def get_metrics():
     Basic metrics endpoint for monitoring.
     """
     try:
+        cache_connected = False
+        cache_namespace_counts = {}
+
+        try:
+            cache_connected = await asyncio.wait_for(
+                cache_service.health_check(), timeout=1.0
+            )
+        except asyncio.TimeoutError:
+            logger.warning("Metrics cache health check timed out")
+        except Exception as e:
+            logger.warning("Metrics cache health check failed", error=str(e))
+
+        try:
+            cache_namespace_counts = await asyncio.wait_for(
+                cache_service.namespace_counts(), timeout=1.0
+            )
+        except asyncio.TimeoutError:
+            logger.warning("Metrics cache namespace counts timed out")
+        except Exception as e:
+            logger.warning("Metrics cache namespace counts failed", error=str(e))
+
         # Basic metrics - can be extended with proper metrics library
         metrics = {
             "app_name": settings.app_name,
             "version": settings.app_version,
             "timestamp": datetime.now().isoformat(),
             "cache_enabled": settings.cache_enabled,
+            "cache_backend": cache_service.backend,
+            "cache_schema": settings.cache_schema,
+            "cache_connected": cache_connected,
+            "cache_namespace_counts": cache_namespace_counts,
             "geolocation_enabled": settings.geolocation_enabled,
         }
 

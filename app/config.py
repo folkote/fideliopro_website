@@ -3,11 +3,19 @@ Configuration settings for FidelioPro FastAPI application.
 """
 
 from typing import Optional
-from pydantic_settings import BaseSettings
+
+from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class Settings(BaseSettings):
     """Application settings."""
+
+    model_config = SettingsConfigDict(
+        env_file=".env",
+        env_file_encoding="utf-8",
+        case_sensitive=False,
+        extra="ignore",
+    )
 
     # Application settings
     app_name: str = "FidelioPro FastAPI"
@@ -28,21 +36,10 @@ class Settings(BaseSettings):
     geolocation_timeout: float = 5.0
     geolocation_fallback_service: str = "https://ipapi.co/{ip}/json/"
 
-    # Cache settings
+    # PostgreSQL-only cache settings
     cache_enabled: bool = True
-    cache_type: str = "postgres"  # "postgres", "redis" or "file"
-    cache_ttl: int = 3600  # 1 hour
-    cache_dir: str = "cache"
     database_url: Optional[str] = None
-    cache_db_schema: str = "public"
-    cache_db_table: str = "cache_entries"
-
-    # Redis settings (if using Redis cache)
-    redis_url: Optional[str] = None
-    redis_host: str = "localhost"
-    redis_port: int = 6379
-    redis_db: int = 0
-    redis_password: Optional[str] = None
+    cache_schema: str = "fideliopro_website"
 
     # Logging settings
     log_level: str = "INFO"
@@ -63,11 +60,6 @@ class Settings(BaseSettings):
     # Security settings
     allowed_hosts: list[str] = ["*"]
     cors_origins: list[str] = ["*"]
-
-    class Config:
-        env_file = ".env"
-        env_file_encoding = "utf-8"
-        case_sensitive = False
 
 
 # Global settings instance

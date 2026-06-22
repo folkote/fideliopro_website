@@ -6,15 +6,19 @@ services:
     env_file:
       - .env
     ports:
-      - "80:80"
+      - "80:7080"
     environment:
       - DEBUG=false
       - HOST=0.0.0.0
-      - PORT=80
+      - PORT=7080
+      - DATABASE_URL=${DATABASE_URL:?DATABASE_URL is required for PostgreSQL cache}
+      - CACHE_SCHEMA=${CACHE_SCHEMA:-fideliopro_website}
+      - DADATA_TOKEN=${DADATA_TOKEN:?DADATA_TOKEN is required for DaData API access}
+      - DADATA_SECRET=${DADATA_SECRET:?DADATA_SECRET is required for DaData API access}
     volumes:
       - ./logs:/app/logs
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:80/health/json"]
+      test: ["CMD", "curl", "-f", "http://localhost:7080/health/json"]
       interval: 30s
       timeout: 10s
       retries: 3

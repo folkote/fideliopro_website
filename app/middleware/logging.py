@@ -62,7 +62,7 @@ class LoggingMiddleware(BaseHTTPMiddleware):
 
         # Start geolocation lookup asynchronously (fire and forget)
         geolocation_task = None
-        if settings.geolocation_enabled and client_ip:
+        if self._should_lookup_geolocation(request, client_ip):
             geolocation_task = asyncio.create_task(
                 self._get_geolocation_safe(client_ip)
             )
@@ -146,6 +146,20 @@ class LoggingMiddleware(BaseHTTPMiddleware):
             return request.client.host
 
         return "unknown"
+
+    def _should_lookup_geolocation(self, request: Request, client_ip: str) -> bool:
+        """Return True when request logging should enrich with geolocation."""
+        if not settings.geolocation_enabled or not client_ip:
+            return False
+
+        if client_ip in {"127.0.0.1", "::1", "localhost", "unknown"}:
+            return False
+
+        path = request.url.path
+        if path in {"/health", "/health/json", "/metrics"}:
+            return False
+
+        return True
 
     async def _get_geolocation_safe(self, ip: str) -> dict:
         """
