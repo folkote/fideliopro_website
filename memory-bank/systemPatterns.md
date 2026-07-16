@@ -49,9 +49,21 @@ Consequences: Positive: identical interactive suggestion requests avoid repeated
 Alternatives: Query-only GET endpoint would be simpler but would not support the full DaData request contract; transforming response would simplify consumers but violates passthrough requirement; shared raw-result cache could reduce duplicate calls across endpoints but is a larger redesign.
 Links: [`README_dadata.md`](../README_dadata.md:155), [`app/services/dadata.py`](../app/services/dadata.py:21), [`app/services/cache.py`](../app/services/cache.py:48)
 
+## ADR: Unified DaData Cleaner full-response cache
+Date: 2026-07-16
+Status: accepted
+Context: Compatibility endpoints [`api_address()`](../app/routers/api.py:39) and [`api_full_address()`](../app/routers/api.py:100) currently expose plain-text street FIAS ID and cleaned address text. Their service methods [`DaDataService.get_street_fias_id()`](../app/services/dadata.py:142) and [`DaDataService.get_cleaned_address_text()`](../app/services/dadata.py:192) cache derived strings separately under `dadata_street_fias` and `dadata_cleaned_address`. That split causes duplicate Cleaner calls across fields, prevents safe reuse of one upstream response, and stores partial data that cannot recreate the complete DaData result.
+Decision: Replace the split Cleaner runtime cache with one versioned full-response cache namespace, `dadata_clean_address_full_v1`, stored in existing PostgreSQL JSONB table [`cache_entries`](../app/services/cache.py:48). The implementation must canonicalize the input address with v1 trimming rules, compute a deterministic SHA-256 cache key from the UTF-8 canonical address, cache one JSONB envelope per canonical address, and derive both compatibility strings from the cached full DaData Cleaner first-result object. Runtime code must stop reading and writing `dadata_street_fias` and `dadata_cleaned_address`.
+Consequences: Positive: one paid Cleaner call can satisfy both compatibility outputs, cached data preserves the complete upstream first-result object for future field extraction, and compatibility endpoints keep their plain-text contract. Negative: first requests after deployment will miss for addresses that only exist in old partial namespaces, increasing initial DaData usage until the new namespace warms. Operationally, old namespace rows may remain in the physical table until a separate cleanup, but they are inert for runtime behavior.
+Alternatives: Keep split derived-string caches, which avoids cold misses but preserves duplicate upstream calls and incomplete data. Add runtime fallback to old partial namespaces, which reduces cold misses but violates the approved full replacement and risks inconsistent field pairs. Migrate old rows into the new namespace, which is unsafe because old `street_fias_id` and cleaned text values cannot reconstruct the full DaData Cleaner response object. Store only selected fields in a new combined cache, which saves space but repeats the same extensibility problem.
+Target data structure: namespace `dadata_clean_address_full_v1`; key `address_sha256:<sha256(canonical_address_utf8)>`; JSONB envelope with `schema_version: 1`, `provider: dadata`, `api: cleaner.address`, `canonical_address`, and `response` containing the full first object from the successful DaData Cleaner response array.
+Compatibility guarantee: [`api_address()`](../app/routers/api.py:39) and [`api_full_address()`](../app/routers/api.py:100) keep the same URL paths, `address` query parameter, and plain-text success responses. Internal service methods remain available but become projections over the unified full-response envelope.
+Old-cache retirement policy: `dadata_street_fias` and `dadata_cleaned_address` are retired for Cleaner runtime reads and writes. Existing rows are not migrated into `dadata_clean_address_full_v1`; operators may archive or delete them later under a separate maintenance task.
+Links: [`memory-bank/activeContext.md`](activeContext.md), [`memory-bank/progress.md`](progress.md), [`app/services/dadata.py`](../app/services/dadata.py:20), [`app/services/cache.py`](../app/services/cache.py:48)
+
 ## Component and Boundary Contracts
 - API router boundary: validate request parameters and translate service failures into HTTP responses.
-- DaData service boundary: handle upstream credentials, HTTP session lifecycle, upstream status handling, and cache-aware field extraction.
+- DaData service boundary: handle upstream credentials, HTTP session lifecycle, upstream status handling, full-response Cleaner caching, and cache-aware field extraction.
 - Cache service boundary: provide namespace-scoped `get`, `set`, `delete`, `health_check`, and namespace count operations without exposing SQL details to routers.
 - Static file router boundary: serve website assets after API routes have had first chance to match.
 
@@ -59,3 +71,4 @@ Links: [`README_dadata.md`](../README_dadata.md:155), [`app/services/dadata.py`]
 - Observability: request logging middleware enriches logs and skips avoidable geolocation overhead for health, metrics, and loopback probes.
 - Resilience: metrics cache calls are bounded with timeouts; health JSON still performs direct service checks.
 - Cost control: DaData health check result is memoized for five minutes because upstream health checks call the paid cleaner API.
+- Cache evolution: incompatible cache canonicalization or envelope changes must use a new namespace suffix instead of rewriting existing JSONB rows in place.

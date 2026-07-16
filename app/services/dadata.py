@@ -19,6 +19,7 @@ from .cache import cache_service
 
 DADATA_STREET_FIAS_NAMESPACE = "dadata_street_fias"
 DADATA_CLEANED_ADDRESS_NAMESPACE = "dadata_cleaned_address"
+DADATA_CLEAN_ADDRESS_FULL_NAMESPACE = "dadata_clean_address_full_v1"
 DADATA_SUGGEST_ADDRESS_NAMESPACE = "dadata_suggest_address"
 LEADING_RUSSIAN_POSTAL_CODE_RE = re.compile(r"^\s*\d{6}\s*[,;\-–—:]?\s+(?=\S)")
 
@@ -149,33 +150,12 @@ class DaDataService:
         Returns:
             Street FIAS ID or None if not found
         """
-        cached_fias_id = await cache_service.get(
-            address,
-            namespace=DADATA_STREET_FIAS_NAMESPACE,
-        )
+        envelope = await self.get_clean_address_cached(address)
+        if not envelope:
+            return None
 
-        if cached_fias_id is not None:
-            self.logger.info("Cache hit for address", address=address[:50])
-            return str(cached_fias_id)
-
-        result = await self.clean_address(address)
-
-        if result and "street_fias_id" in result:
-            street_fias_id = result["street_fias_id"]
-            await cache_service.set(
-                address,
-                street_fias_id,
-                namespace=DADATA_STREET_FIAS_NAMESPACE,
-                source="dadata-clean-address",
-            )
-            self.logger.info(
-                "Address cached",
-                source=result.get("source", "")[:50],
-                street_fias_id=str(street_fias_id),
-            )
-            return street_fias_id
-
-        return None
+        street_fias_id = envelope.get("derived", {}).get("street_fias_id")
+        return str(street_fias_id) if street_fias_id is not None else None
 
     async def get_full_result(self, address: str) -> Optional[Dict[str, Any]]:
         """
@@ -187,7 +167,13 @@ class DaDataService:
         Returns:
             Full result dictionary or None if failed
         """
-        return await self.clean_address(address)
+        envelope = await self.get_clean_address_cached(address)
+        if not envelope:
+            return None
+
+        response = envelope.get("response", {})
+        body = response.get("body") if isinstance(response, dict) else None
+        return body if isinstance(body, dict) else None
 
     async def get_cleaned_address_text(self, address: str) -> Optional[str]:
         """
@@ -199,33 +185,72 @@ class DaDataService:
         Returns:
             Cleaned address text or None if failed
         """
-        cached_cleaned_address = await cache_service.get(
-            address,
-            namespace=DADATA_CLEANED_ADDRESS_NAMESPACE,
+        envelope = await self.get_clean_address_cached(address)
+        if not envelope:
+            return None
+
+        cleaned_address = envelope.get("derived", {}).get("result")
+        return str(cleaned_address) if cleaned_address is not None else None
+
+    async def get_clean_address_cached(self, address: str) -> Optional[Dict[str, Any]]:
+        """Return a versioned full DaData Cleaner envelope from cache or upstream.
+
+        Usage:
+            Minimal initialization::
+
+                await dadata_service.initialize()
+
+            Minimal happy-path call::
+
+                envelope = await dadata_service.get_clean_address_cached("Москва")
+                cleaned_text = envelope["derived"]["result"] if envelope else None
+
+            Common error-handling case::
+
+                if envelope is None:
+                    logger.warning("DaData Cleaner result unavailable")
+
+        No new external API usage was introduced for this method. It adapts the
+        existing aiohttp-based ``clean_address`` call and the existing
+        PostgreSQL JSONB ``cache_service`` contract, while replacing the retired
+        derived-string runtime namespaces with one full-response namespace.
+        """
+        canonical_address = self._canonicalize_clean_address(address)
+        cache_key = self._clean_address_cache_key(canonical_address)
+
+        cached_envelope = await cache_service.get(
+            cache_key,
+            namespace=DADATA_CLEAN_ADDRESS_FULL_NAMESPACE,
         )
 
-        if cached_cleaned_address is not None:
-            self.logger.info("Cache hit for full address", address=address[:50])
-            return str(cached_cleaned_address)
-
-        result = await self.clean_address(address)
-
-        if result and "result" in result:
-            cleaned_address = result["result"]
-            await cache_service.set(
-                address,
-                cleaned_address,
-                namespace=DADATA_CLEANED_ADDRESS_NAMESPACE,
-                source="dadata-clean-address",
-            )
+        if self._is_valid_clean_address_envelope(cached_envelope):
             self.logger.info(
-                "Full address cached",
-                source=result.get("source", "")[:50],
-                result=cleaned_address[:50],
+                "Cache hit for DaData Cleaner address",
+                address=canonical_address[:50],
             )
-            return cleaned_address
+            return cached_envelope
 
-        return None
+        result = await self.clean_address(canonical_address)
+        if not result:
+            return None
+
+        envelope = self._build_clean_address_envelope(
+            canonical_address=canonical_address,
+            cache_key=cache_key,
+            result=result,
+        )
+        await cache_service.set(
+            cache_key,
+            envelope,
+            namespace=DADATA_CLEAN_ADDRESS_FULL_NAMESPACE,
+            source="dadata-clean-address-full",
+        )
+        self.logger.info(
+            "DaData Cleaner full response cached",
+            source=str(result.get("source", ""))[:50],
+            result=str(result.get("result", ""))[:50],
+        )
+        return envelope
 
     async def suggest_address(self, payload: Dict[str, Any]) -> Tuple[int, Dict[str, Any]]:
         """Return DaData address suggestions with PostgreSQL caching.
@@ -359,6 +384,64 @@ class DaDataService:
         )
         payload_hash = hashlib.sha256(canonical_payload.encode("utf-8")).hexdigest()
         return f"sha256:{payload_hash}"
+
+    def _canonicalize_clean_address(self, address: str) -> str:
+        return address.strip()
+
+    def _clean_address_cache_key(self, canonical_address: str) -> str:
+        address_hash = hashlib.sha256(canonical_address.encode("utf-8")).hexdigest()
+        return f"sha256:v1:cleaner_address:{address_hash}"
+
+    def _build_clean_address_envelope(
+        self,
+        canonical_address: str,
+        cache_key: str,
+        result: Dict[str, Any],
+    ) -> Dict[str, Any]:
+        derived: Dict[str, Any] = {
+            "result": result.get("result"),
+            "street_fias_id": result.get("street_fias_id"),
+            "fias_id": result.get("fias_id"),
+            "unrestricted_value": result.get("unrestricted_value"),
+        }
+        for quality_field in (
+            "qc",
+            "qc_complete",
+            "qc_geo",
+            "qc_house",
+            "qc_name",
+            "qc_conflict",
+        ):
+            if quality_field in result:
+                derived[quality_field] = result.get(quality_field)
+
+        return {
+            "schema_version": 1,
+            "provider": "dadata",
+            "api": "cleaner.address",
+            "request": {
+                "canonical_address": canonical_address,
+                "cache_key_algorithm": "sha256:v1:cleaner_address:utf8_trim",
+                "cache_key": cache_key,
+            },
+            "response": {
+                "status_code": 200,
+                "body": result,
+            },
+            "derived": derived,
+        }
+
+    def _is_valid_clean_address_envelope(self, value: Any) -> bool:
+        if not isinstance(value, dict):
+            return False
+        if value.get("schema_version") != 1:
+            return False
+        if value.get("provider") != "dadata" or value.get("api") != "cleaner.address":
+            return False
+        response = value.get("response")
+        if not isinstance(response, dict) or response.get("status_code") != 200:
+            return False
+        return isinstance(response.get("body"), dict)
 
     async def _read_json_response(self, response: aiohttp.ClientResponse) -> Dict[str, Any]:
         try:

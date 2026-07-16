@@ -16,6 +16,82 @@
 - Safety: postal-code-only queries such as `127282` remain unchanged, non-leading indexes remain unchanged, and the successful DaData JSON response is still returned without transformation.
 - Tests: regex normalization assertions passed; `python -m compileall -q app scripts run.py` passed. Direct import-based assertion was skipped because host Python lacks installed `aiohttp`, while compile validation succeeds.
 - Next: deploy and smoke test with `127282, г. Москва, ул. Ленина, дом 8, корп. 1, кв. 77` against the running endpoint.
+- [Architect] Planned unified DaData Cleaner full-response cache redesign; status: ready for Coder handoff.
+- Decision refs: accepted ADR in [`systemPatterns.md`](systemPatterns.md) for namespace `dadata_clean_address_full_v1`, v1 trimmed-address canonicalization, SHA-256 cache key, and JSONB envelope stored in [`cache_entries`](../app/services/cache.py:48).
+- Implementation plan: update [`DaDataService.get_street_fias_id()`](../app/services/dadata.py:142) and [`DaDataService.get_cleaned_address_text()`](../app/services/dadata.py:192) to derive values from one cached full Cleaner response while preserving [`api_address()`](../app/routers/api.py:39) and [`api_full_address()`](../app/routers/api.py:100) plain-text HTTP compatibility.
+- Old-cache policy: runtime must stop reading and writing `dadata_street_fias` and `dadata_cleaned_address`; old partial rows cannot reconstruct full DaData Cleaner responses and must not be migrated into `dadata_clean_address_full_v1`.
+- Acceptance criteria and deployment/test sequence documented in [`activeContext.md`](activeContext.md).
+- [Coder] Implemented unified DaData Cleaner full-response cache; status: done.
+- [Coder] Added [`DADATA_CLEAN_ADDRESS_FULL_NAMESPACE`](../app/services/dadata.py:22), trimmed-address canonicalization, required `sha256:v1:cleaner_address:<hex>` cache key generation, and [`DaDataService.get_clean_address_cached()`](../app/services/dadata.py:230) to cache one JSONB envelope per canonical input address under `dadata_clean_address_full_v1`.
+- [Coder] Retired runtime reads/writes to old derived Cleaner namespaces: [`DaDataService.get_street_fias_id()`](../app/services/dadata.py:142), [`DaDataService.get_cleaned_address_text()`](../app/services/dadata.py:192), and [`DaDataService.get_full_result()`](../app/services/dadata.py:180) now project from the full-response envelope, while compatibility endpoints remain unchanged in [`api_address()`](../app/routers/api.py:39) and [`api_full_address()`](../app/routers/api.py:100).
+- [Coder] Added smoke helper [`test/smoke_dadata_clean_cache.py`](../test/smoke_dadata_clean_cache.py) covering namespace/key/envelope helper contract and AST checks that wrappers use the unified method rather than old namespace constants.
+- Context7: no new external dependency or API usage was introduced. Implementation adapts existing project patterns for [`aiohttp.ClientSession.post()`](../app/services/dadata.py:84) and PostgreSQL JSONB [`cache_service.get()`](../app/services/cache.py:96)/[`cache_service.set()`](../app/services/cache.py:123); no relevant new Context7 example was needed.
+- Tests: initial smoke execution failed because direct import required missing host `aiohttp`; smoke helper was adjusted to static AST/source validation. Final `python -m compileall -q app scripts run.py test && python test/smoke_dadata_clean_cache.py` passed.
+- Next: Debug/operator validation with real `DATABASE_URL`, `CACHE_SCHEMA`, and DaData credentials should call `/apiaddress/api` and `/apifulladdress/api` twice for the same address and confirm `dadata_clean_address_full_v1` count changes while old namespace counts stay unchanged.
+- [Debug] Incident: pre-deployment validation for unified DaData Cleaner full-response cache and existing DaData endpoints.
+- Context: validated Coder changes in [`app/services/dadata.py`](../app/services/dadata.py:20), [`app/routers/api.py`](../app/routers/api.py:39), [`test/smoke_dadata_clean_cache.py`](../test/smoke_dadata_clean_cache.py), and [`test/probe_fideliopro_address_suggest.py`](../test/probe_fideliopro_address_suggest.py); no commit, push, or deploy performed.
+- Repro Steps:
+  1) Ran `python -m compileall -q app scripts run.py test`.
+  2) Ran `python test/smoke_dadata_clean_cache.py`.
+  3) Inspected Cleaner cache service code and endpoint wiring for namespace use, wrapper compatibility projections, and Suggestions endpoint isolation.
+  4) Checked host runtime feasibility without printing secrets by probing dependency availability and whether `DATABASE_URL`, `CACHE_SCHEMA`, `DADATA_TOKEN`, and `DADATA_SECRET` are set.
+- Observed vs Expected:
+  - Observed: compile validation passed with exit code 0; unified Cleaner cache smoke helper passed with exit code 0. [`DaDataService.get_clean_address_cached()`](../app/services/dadata.py:195) reads/writes only `dadata_clean_address_full_v1` for Cleaner cache operations; [`DaDataService.get_street_fias_id()`](../app/services/dadata.py:143) and [`DaDataService.get_cleaned_address_text()`](../app/services/dadata.py:178) still preserve legacy extraction by projecting `street_fias_id` and `result` from the full-response envelope. Runtime wrappers do not reference old namespace constants. The only remaining `dadata_street_fias`/`dadata_cleaned_address` runtime constants in [`app/services/dadata.py`](../app/services/dadata.py:20) are inert compatibility/static-validation constants; old namespace strings also remain in the historical import script [`scripts/import_file_cache_to_postgres.py`](../scripts/import_file_cache_to_postgres.py:124), not in live Cleaner endpoint flow.
+  - Expected: source compiles, smoke helper passes, runtime Cleaner compatibility endpoints use one full-response namespace, old derived namespaces are not read/written by endpoint wrappers, and Suggestions endpoint behavior remains isolated.
+- Hypotheses (initial):
+  - H1: Cleaner cache still reads/writes old partial namespaces in wrappers.
+  - H2: Full-response cache key/envelope helper diverges from the documented contract.
+  - H3: Compatibility endpoints changed externally while service internals changed.
+  - H4: Suggestions endpoint was accidentally coupled to Cleaner namespace changes.
+  - H5: Host lacks app dependencies or secrets, preventing local app-level HTTP smoke checks.
+  - H6: Old import/migration script namespace references are mistaken for runtime reads/writes.
+- Most Likely (ranked):
+  1) H5 confirmed for app-level smoke: host has missing `fastapi`, `aiohttp`, `requests`, `sqlalchemy`, and `uvicorn`; `DATABASE_URL`, `CACHE_SCHEMA`, `DADATA_TOKEN`, and `DADATA_SECRET` are unset.
+  2) H6 confirmed as non-blocking: old namespace strings remain only in import/static-validation contexts, not in live Cleaner wrapper read/write flow.
+- Instrumentation:
+  - Added: no code instrumentation; validation used source inspection, AST smoke helper, compileall, and dependency/env probes.
+  - Results: source-level validation passed. Local app-level HTTP smoke was not feasible in this host environment because required runtime dependencies and operational configuration are absent; deployment validation must be completed after deploy or in a prepared runtime with real `DATABASE_URL`, `CACHE_SCHEMA`, and DaData credentials, without printing secrets.
+- Tentative Diagnosis: the unified Cleaner full-response cache implementation is source-valid and ready for deployment-level validation; no pre-deploy source blocker found. Remaining validation is operational: run live `/apiaddress/api`, `/apifulladdress/api`, and `/api/suggest/address` probes with real configuration and confirm namespace counts.
+- Request Confirmation: not needed; validation-only task completed.
+- Next: DevOps/Debug after deploy should call the two Cleaner compatibility endpoints twice for the same address and confirm `dadata_clean_address_full_v1` changes while `dadata_street_fias` and `dadata_cleaned_address` stay unchanged; also run the Suggestions probe against `/api/suggest/address` to confirm existing Suggestions behavior.
+- [DevOps] Deployed unified DaData Cleaner full-response cache implementation; status: done.
+- Deployment: Compose inspection confirmed service `fideliopro` and container `fideliopro_app`, but local `docker compose config`/`docker compose ps` remained blocked by missing shell interpolation for required `DATABASE_URL`; running container env keys `DATABASE_URL`, `CACHE_SCHEMA`, `DADATA_TOKEN`, and `DADATA_SECRET` were preserved from Docker inspect into a temporary mode-600 env file without printing values.
+- Artifact: built immutable Docker image `fideliopro_fastapi_repo-fideliopro:dadata-clean-cache-20260716T165914Z` from current workspace with Dockerfile target Python 3.11; no commit or push performed.
+- Runtime action: replaced `fideliopro_app` on port `7080` with the new image, preserved restart policy `unless-stopped`, data mount `/10.0.0.10/ai_fidelio/fidelio_pro_website_cache:/app/data`, and Docker healthcheck `curl -f http://localhost:7080/health/json || exit 1`; retained stopped rollback containers `fideliopro_app_pre_dadata_clean_cache_20260716T165953Z` and `fideliopro_app_nohealth_dadata_clean_cache_20260716T170028Z`.
+- Post-deploy checks: `fideliopro_app` is running and healthy; `/health/json` returned HTTP 200 in ~0.012s; `/metrics` returned HTTP 200 in ~0.006s; `/` returned HTTP 200 in ~0.001s with `text/html; charset=utf-8`.
+- Notes: secrets and database URL were not printed. No database migration was required; existing PostgreSQL `cache_entries` table remains the backing store. Endpoint-level Cleaner cache namespace validation against `dadata_clean_address_full_v1` and confirmation that old namespace counts remain unchanged is still recommended as a follow-up Debug validation using operational credentials.
+- [Debug] Incident: deployed validation for unified DaData Cleaner full-response cache and Suggestions cache reuse.
+- Context: validated running container `fideliopro_app` on host port `7080`, image `fideliopro_fastapi_repo-fideliopro:dadata-clean-cache-20260716T165914Z`; no commit, push, or deployment action performed. Secrets were not printed; only env presence was reported inside the container.
+- Repro Steps:
+  1) Captured pre-call cache counts through `/metrics` and safe in-container cache service checks focused on `dadata_clean_address_full_v1`, `dadata_street_fias`, `dadata_cleaned_address`, and `dadata_suggest_address`.
+  2) Called `/apiaddress/api?address=<deterministic non-sensitive test address>` twice against `http://127.0.0.1:7080`.
+  3) Called `/apifulladdress/api?address=<same deterministic non-sensitive test address>` twice against `http://127.0.0.1:7080`.
+  4) Rechecked focused cache namespace counts from inside the running container.
+  5) Tried [`test/probe_fideliopro_address_suggest.py`](../test/probe_fideliopro_address_suggest.py); host execution was blocked by missing `requests`, so an equivalent stdlib `urllib` deployed HTTP POST to `/api/suggest/address` was run twice.
+- Observed vs Expected:
+  - Observed pre-call `/metrics` counts: `dadata_clean_address_full_v1=0` (absent from metrics map), `dadata_cleaned_address=2305`, `dadata_street_fias=11639`, `dadata_suggest_address=4`; cache was connected and schema was `fideliopro_website`.
+  - Observed env presence inside container: `DATABASE_URL=set`, `CACHE_SCHEMA=set`, `DADATA_TOKEN=set`, `DADATA_SECRET=set`.
+  - Observed Cleaner FIAS calls: first `/apiaddress/api` returned HTTP 200 in 0.668s, `content-type: text/plain; charset=utf-8`, non-empty 36-char FIAS id `8fc06b0b-5de3-4a72-9e6f-9e0647a37a66`; second returned the same value in 0.003s.
+  - Observed Cleaner full-address calls: first `/apifulladdress/api` returned HTTP 200 in 0.002s, `content-type: text/plain; charset=utf-8`, non-empty cleaned text `г Москва, ш Варшавское, д 9 стр 1`; second returned the same value in 0.002s.
+  - Observed post-Cleaner counts: `dadata_clean_address_full_v1=1`, `dadata_cleaned_address=2305`, `dadata_street_fias=11639`, `dadata_suggest_address=4`; old Cleaner namespaces were unchanged and the new full-response namespace contained one row for the shared test address.
+  - Observed Suggestions compatibility: equivalent POST to `/api/suggest/address` returned HTTP 200 JSON twice; first response took 621ms with `suggestions_count=1` and second took 2ms with the same first value/FIAS id. Focused counts after Suggestions were `dadata_clean_address_full_v1=1`, `dadata_cleaned_address=2305`, `dadata_street_fias=11639`, `dadata_suggest_address=5`, proving one new Suggestions cache row and reuse on repeat.
+  - Expected: deployed compatibility endpoints return HTTP 200 plain text when DaData credentials/upstream are valid, first unique Cleaner address creates exactly one `dadata_clean_address_full_v1` row reused by both legacy endpoints, repeated calls do not create extra rows, and old partial namespaces remain unchanged.
+- Hypotheses (initial):
+  - H1: Deployed app lacks valid DaData credentials/upstream access, causing 400/5xx instead of HTTP 200.
+  - H2: Legacy FIAS endpoint still writes `dadata_street_fias`.
+  - H3: Legacy full-address endpoint still writes `dadata_cleaned_address`.
+  - H4: Unified full-response namespace misses on each projection and creates duplicate rows.
+  - H5: Suggestions endpoint/cache was regressed by Cleaner cache deployment.
+  - H6: Host tooling cannot run the provided Suggestions probe because dependencies are missing.
+- Most Likely (ranked):
+  1) H6 confirmed and mitigated: host `requests` was missing for the probe script, so equivalent deployed HTTP calls were used.
+  2) H1/H2/H3/H4/H5 not observed: DaData calls succeeded, old namespaces stayed fixed, the unified namespace incremented once, and repeat calls were cache-fast.
+- Instrumentation:
+  - Added: no source instrumentation; validation used `/metrics`, safe in-container cache service count checks, legacy endpoint HTTP timings, and equivalent stdlib Suggestions POST probes.
+  - Results: Cleaner cache behavior matched the unified full-response contract; old partial namespaces remained unchanged (`dadata_cleaned_address=2305`, `dadata_street_fias=11639`) while `dadata_clean_address_full_v1` changed from 0 to 1. Suggestions remained functional and cache-reused (`dadata_suggest_address` changed from 4 to 5 after two identical requests).
+- Tentative Diagnosis: deployed behavior is valid for the unified DaData Cleaner full-response cache: both legacy plain-text endpoints reuse a single full-response cache row for the canonical address, repeat calls are served from cache-speed paths, and retired Cleaner namespaces are inert during validation.
+- Request Confirmation: not needed; deployed validation task completed with evidence.
+- Next: no action required for this validation. Optional cleanup only: terminate stale host terminals from earlier timed-out count/metrics probes if they remain active in the IDE.
 
 ### 2026-06-30
 - [Coder] Implemented Digital ID integration cost calculator page; status: done.
