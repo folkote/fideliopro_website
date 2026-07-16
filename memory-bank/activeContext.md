@@ -1,27 +1,27 @@
 # Active Context
 
 ## Current Focus
-- Plan full replacement of the split DaData Cleaner runtime cache with one versioned full-response cache while preserving external HTTP compatibility.
-- Keep existing compatibility endpoints [`api_address()`](../app/routers/api.py:39) and [`api_full_address()`](../app/routers/api.py:100) stable: same URLs, same `address` query parameter, and same plain-text response semantics.
-- Retire runtime use of old partial namespaces `dadata_street_fias` and `dadata_cleaned_address`; do not migrate those rows into the new full-response namespace because derived strings cannot reconstruct a complete DaData Cleaner response.
+- Completed and closed: unified DaData Cleaner runtime cache now uses the versioned full-response namespace `dadata_clean_address_full_v1` while preserving external HTTP compatibility.
+- Compatibility endpoints [`api_address()`](../app/routers/api.py:39) and [`api_full_address()`](../app/routers/api.py:100) were implemented, deployed, validated, committed as `306ddac`, and pushed to `origin/main` on branch `main`.
+- Runtime use of old partial namespaces `dadata_street_fias` and `dadata_cleaned_address` is retired for Cleaner compatibility endpoint calls; old rows remain physically present only as historical cache data.
 
 ## Next Steps (ordered)
-1. [Architect] Document the target Cleaner cache contract, old-cache retirement policy, compatibility guarantees, and implementation acceptance criteria.
-2. [Coder] Add one new Cleaner cache namespace constant in [`app/services/dadata.py`](../app/services/dadata.py:20): `dadata_clean_address_full_v1`.
-3. [Coder] Add a canonicalization helper for the compatibility input address before cache lookup. The first implementation should trim surrounding whitespace and preserve the remaining string exactly; if future normalization expands, it must be documented and versioned.
-4. [Coder] Add a deterministic cache key helper for Cleaner calls: `sha256(canonical_address.encode("utf-8"))`, optionally prefixed as `address_sha256:<hex>` for operator readability.
-5. [Coder] Add a cache-aware full Cleaner method that reads/writes only `dadata_clean_address_full_v1`, calls DaData Cleaner only on cache miss, and stores a versioned JSONB envelope in existing PostgreSQL table [`cache_entries`](../app/services/cache.py:48).
-6. [Coder] Preserve wrapper methods [`DaDataService.get_street_fias_id()`](../app/services/dadata.py:142) and [`DaDataService.get_cleaned_address_text()`](../app/services/dadata.py:192) as backward-compatible service APIs, but make both derive their strings from the new full-response envelope instead of reading or writing old partial namespaces.
-7. [Coder] Keep [`api_address()`](../app/routers/api.py:39) and [`api_full_address()`](../app/routers/api.py:100) externally unchanged, including plain-text successful responses and existing URL/query shape.
-8. [Coder] Remove all new runtime reads and writes to `dadata_street_fias` and `dadata_cleaned_address`; old rows may remain physically present until an operator-led cleanup, but they must be inert.
-9. [Coder] Add or update tests for first-call cache miss, second-call cache hit, extraction of `street_fias_id`, extraction of `result`, empty or missing fields, missing credentials, upstream non-200 behavior, and no calls to old namespaces.
-10. [Debug] Validate deployed behavior with real `DATABASE_URL`, `CACHE_SCHEMA`, and DaData credentials without printing secrets; confirm old namespace counts do not change during compatibility endpoint calls.
+1. [Closed] Planning, documentation, implementation, deployment, validation, commit, and push for the unified DaData Cleaner full-response cache are complete.
+2. [Operator optional] Leave old partial namespace rows in place unless a separate cleanup task is explicitly approved; no migration into `dadata_clean_address_full_v1` is possible from derived partial values.
+3. [Documentation follow-up] Commit this final Memory Bank synthesis separately because implementation commit `306ddac` was already pushed before closure documentation was added.
 
 ## Delegation Map
 - Architect: owns Memory Bank plan, ADR, acceptance criteria, and handoff clarity.
 - Coder: implements the service-level replacement in [`app/services/dadata.py`](../app/services/dadata.py:20), updates endpoint-adjacent tests, and avoids source changes outside the compatibility requirement.
 - Debug: validates runtime cache behavior, metrics namespace counts, and deployed compatibility responses.
 - Operators: may later decide whether to archive or delete old namespace rows from [`cache_entries`](../app/services/cache.py:48); this is not required for the implementation and must not be treated as a data migration into the new namespace.
+
+## Closure Evidence
+- Commit and push: `306ddac` with message `Unify DaData cleaner address cache`, pushed from branch `main` to `origin/main`.
+- Deployed container: `fideliopro_app` on host port `7080`, using image `fideliopro_fastapi_repo-fideliopro:dadata-clean-cache-20260716T165914Z`; Docker health reported healthy.
+- Deployed validation: one new `dadata_clean_address_full_v1` row was created for the shared Cleaner smoke address, repeated compatibility endpoint calls reused it, and old namespaces `dadata_street_fias` plus `dadata_cleaned_address` stayed unchanged.
+- Compatibility validation: `/apiaddress/api` and `/apifulladdress/api` returned HTTP 200 plain-text responses with stable repeat values; `/api/suggest/address` still returned HTTP 200 JSON and reused its own `dadata_suggest_address` cache.
+- Committed implementation/documentation set: [`app/services/dadata.py`](../app/services/dadata.py), [`memory-bank/activeContext.md`](activeContext.md), [`memory-bank/systemPatterns.md`](systemPatterns.md), [`memory-bank/progress.md`](progress.md), and [`test/smoke_dadata_clean_cache.py`](../test/smoke_dadata_clean_cache.py).
 
 ## Target Cache Contract
 - Physical store: existing PostgreSQL JSONB table [`cache_entries`](../app/services/cache.py:48).

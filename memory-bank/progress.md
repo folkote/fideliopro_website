@@ -92,6 +92,12 @@
 - Tentative Diagnosis: deployed behavior is valid for the unified DaData Cleaner full-response cache: both legacy plain-text endpoints reuse a single full-response cache row for the canonical address, repeat calls are served from cache-speed paths, and retired Cleaner namespaces are inert during validation.
 - Request Confirmation: not needed; deployed validation task completed with evidence.
 - Next: no action required for this validation. Optional cleanup only: terminate stale host terminals from earlier timed-out count/metrics probes if they remain active in the IDE.
+- [Orchestrator] Final workflow synthesis for unified DaData Cleaner full-response cache; status: complete and closed.
+- Scope completed: planned and documented the cache contract in [`activeContext.md`](activeContext.md) and [`systemPatterns.md`](systemPatterns.md), implemented the service-level replacement in [`app/services/dadata.py`](../app/services/dadata.py), added smoke coverage in [`test/smoke_dadata_clean_cache.py`](../test/smoke_dadata_clean_cache.py), deployed the container, validated deployed behavior, committed, and pushed.
+- Commit/push: commit `306ddac` with message `Unify DaData cleaner address cache` was pushed from branch `main` to `origin/main`.
+- Deployment evidence: running container `fideliopro_app` uses image `fideliopro_fastapi_repo-fideliopro:dadata-clean-cache-20260716T165914Z` on host port `7080`; Docker health was healthy; `/health/json`, `/metrics`, and `/` responded successfully after deploy.
+- Validation evidence: `dadata_clean_address_full_v1` incremented exactly once for the deterministic Cleaner smoke address; repeated `/apiaddress/api` and `/apifulladdress/api` calls returned stable HTTP 200 plain-text values from the unified full-response cache; old namespaces `dadata_street_fias` and `dadata_cleaned_address` stayed unchanged; `/api/suggest/address` continued to return HTTP 200 JSON and cache-reuse through `dadata_suggest_address`.
+- Closure note: no application source code was changed during this final synthesis. Because commit `306ddac` was already pushed before this final Memory Bank closure entry, a small follow-up documentation-only commit is required for [`memory-bank/activeContext.md`](activeContext.md) and [`memory-bank/progress.md`](progress.md).
 
 ### 2026-06-30
 - [Coder] Implemented Digital ID integration cost calculator page; status: done.
