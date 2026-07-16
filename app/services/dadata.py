@@ -5,6 +5,7 @@ DaData API service for address cleaning and validation.
 import asyncio
 import hashlib
 import json
+import re
 import time
 from typing import Any, Dict, Optional, Tuple
 
@@ -19,6 +20,7 @@ from .cache import cache_service
 DADATA_STREET_FIAS_NAMESPACE = "dadata_street_fias"
 DADATA_CLEANED_ADDRESS_NAMESPACE = "dadata_cleaned_address"
 DADATA_SUGGEST_ADDRESS_NAMESPACE = "dadata_suggest_address"
+LEADING_RUSSIAN_POSTAL_CODE_RE = re.compile(r"^\s*\d{6}\s*[,;\-–—:]?\s+(?=\S)")
 
 
 class DaDataService:
@@ -252,7 +254,8 @@ class DaDataService:
         cached so transient upstream failures and rate limits do not become
         durable cache entries.
         """
-        cache_key = self._suggest_address_cache_key(payload)
+        normalized_payload = self._normalize_suggest_address_payload(payload)
+        cache_key = self._suggest_address_cache_key(normalized_payload)
         cached_response = await cache_service.get(
             cache_key,
             namespace=DADATA_SUGGEST_ADDRESS_NAMESPACE,
@@ -261,7 +264,7 @@ class DaDataService:
         if cached_response is not None:
             self.logger.info(
                 "Cache hit for DaData address suggestions",
-                query=str(payload.get("query", ""))[:50],
+                query=str(normalized_payload.get("query", ""))[:50],
             )
             return 200, cached_response
 
@@ -278,7 +281,7 @@ class DaDataService:
 
             async with self.session.post(
                 f"{self.suggestions_base_url}/suggest/address",
-                json=payload,
+                json=normalized_payload,
             ) as response:
                 response_payload = await self._read_json_response(response)
 
@@ -291,14 +294,14 @@ class DaDataService:
                     )
                     self.logger.info(
                         "DaData address suggestions cached",
-                        query=str(payload.get("query", ""))[:50],
+                        query=str(normalized_payload.get("query", ""))[:50],
                         suggestions_count=len(response_payload.get("suggestions", [])),
                     )
                 else:
                     self.logger.warning(
                         "DaData suggestions API returned non-200 status",
                         status=response.status,
-                        query=str(payload.get("query", ""))[:50],
+                        query=str(normalized_payload.get("query", ""))[:50],
                     )
 
                 return response.status, response_payload
@@ -306,7 +309,7 @@ class DaDataService:
         except asyncio.TimeoutError:
             self.logger.error(
                 "DaData suggestions request timeout",
-                query=str(payload.get("query", ""))[:50],
+                query=str(normalized_payload.get("query", ""))[:50],
             )
             return 504, {"detail": "DaData request timeout"}
 
@@ -314,7 +317,7 @@ class DaDataService:
             self.logger.error(
                 "DaData suggestions client error",
                 error=str(e),
-                query=str(payload.get("query", ""))[:50],
+                query=str(normalized_payload.get("query", ""))[:50],
             )
             return 502, {"detail": "DaData client error"}
 
@@ -322,9 +325,29 @@ class DaDataService:
             self.logger.error(
                 "DaData suggestions unexpected error",
                 error=str(e),
-                query=str(payload.get("query", ""))[:50],
+                query=str(normalized_payload.get("query", ""))[:50],
             )
             return 500, {"detail": "DaData suggestions request failed"}
+
+    def _normalize_suggest_address_payload(self, payload: Dict[str, Any]) -> Dict[str, Any]:
+        """Return a DaData suggestions payload with a safe query normalization.
+
+        A leading Russian six-digit postal code often makes interactive address
+        suggestions worse, while DaData still supports a postal-code-only query.
+        Therefore only strip the leading index when the remaining query contains
+        non-empty address text. The successful response is still returned exactly
+        as DaData sends it for the normalized query.
+        """
+        normalized_payload = dict(payload)
+        query = normalized_payload.get("query")
+        if isinstance(query, str):
+            normalized_payload["query"] = self._strip_leading_postal_code(query)
+        return normalized_payload
+
+    def _strip_leading_postal_code(self, query: str) -> str:
+        stripped_query = query.strip()
+        normalized_query = LEADING_RUSSIAN_POSTAL_CODE_RE.sub("", stripped_query, count=1).strip()
+        return normalized_query or stripped_query
 
     def _suggest_address_cache_key(self, payload: Dict[str, Any]) -> str:
         canonical_payload = json.dumps(

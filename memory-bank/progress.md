@@ -11,6 +11,11 @@
 - Context7: no new external library usage was introduced. Existing project stack uses [`aiohttp.ClientSession.post()`](../app/services/dadata.py:278), FastAPI [`Body`](../app/routers/api.py:7), and [`JSONResponse`](../app/routers/api.py:8) patterns already present in the codebase and documented in local [`README_dadata.md`](../README_dadata.md:155).
 - Tests: `python -m compileall -q app scripts run.py` passed.
 - Next: validate against a running deployment with real `DATABASE_URL`, `CACHE_SCHEMA`, and DaData token by calling `POST /api/suggest/address` twice with the same body and confirming the second response is served from cache without a new paid upstream call.
+- [Coder] Added safe leading postal-code normalization for DaData Suggestions queries; status: done.
+- [Coder] [`DaDataService.suggest_address()`](../app/services/dadata.py:229) now sends a normalized payload to DaData/cache where only a leading Russian six-digit postal code followed by additional address text is stripped from `query`.
+- Safety: postal-code-only queries such as `127282` remain unchanged, non-leading indexes remain unchanged, and the successful DaData JSON response is still returned without transformation.
+- Tests: regex normalization assertions passed; `python -m compileall -q app scripts run.py` passed. Direct import-based assertion was skipped because host Python lacks installed `aiohttp`, while compile validation succeeds.
+- Next: deploy and smoke test with `127282, г. Москва, ул. Ленина, дом 8, корп. 1, кв. 77` against the running endpoint.
 
 ### 2026-06-30
 - [Coder] Implemented Digital ID integration cost calculator page; status: done.
