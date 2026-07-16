@@ -1,3 +1,31 @@
+### 2026-07-16
+- [Architect] UMB completed for DaData proxy/cache review.
+- Summary: confirmed current address endpoints proxy to DaData through [`DaDataService`](../app/services/dadata.py:21) and cache repeated lookups through PostgreSQL [`CacheService`](../app/services/cache.py:17) using namespace-scoped keys.
+- Documentation: created baseline Memory Bank files [`projectbrief.md`](projectbrief.md), [`productContext.md`](productContext.md), [`systemPatterns.md`](systemPatterns.md), [`techContext.md`](techContext.md), and [`activeContext.md`](activeContext.md) because only [`progress.md`](progress.md) existed.
+- Decision refs: [`systemPatterns.md`](systemPatterns.md) documents PostgreSQL-only cache and plain text compatibility endpoint ADRs.
+- Next: clarify the new endpoint path, response format, and exact DaData field/transformation before handoff to Coder.
+- [Architect] Planned new DaData Suggestions proxy endpoint: `POST /api/suggest/address`, full JSON passthrough, PostgreSQL cache namespace `dadata_suggest_address`, deterministic full-body cache key, and cache only successful HTTP 200 JSON responses.
+- [Coder] Implemented DaData Suggestions proxy endpoint; status: done.
+- [Coder] Added cache-aware [`DaDataService.suggest_address()`](../app/services/dadata.py:227) using upstream `https://suggestions.dadata.ru/suggestions/api/4_1/rs/suggest/address`, dedicated namespace `dadata_suggest_address`, SHA-256 deterministic cache key from full JSON request body, and successful HTTP 200 JSON response caching only.
+- [Coder] Added [`suggest_address()`](../app/routers/api.py:153) route for `POST /api/suggest/address`; it accepts the DaData-compatible JSON body, validates `query`, delegates upstream/cache behavior to the service, and returns the JSON payload unchanged on success.
+- Context7: no new external library usage was introduced. Existing project stack uses [`aiohttp.ClientSession.post()`](../app/services/dadata.py:278), FastAPI [`Body`](../app/routers/api.py:7), and [`JSONResponse`](../app/routers/api.py:8) patterns already present in the codebase and documented in local [`README_dadata.md`](../README_dadata.md:155).
+- Tests: `python -m compileall -q app scripts run.py` passed.
+- Next: validate against a running deployment with real `DATABASE_URL`, `CACHE_SCHEMA`, and DaData token by calling `POST /api/suggest/address` twice with the same body and confirming the second response is served from cache without a new paid upstream call.
+
+### 2026-06-30
+- [Coder] Implemented Digital ID integration cost calculator page; status: done.
+- [Coder] Added static calculator page at `static/website/digital-id-calculator.html` with two inputs: room count and discount percent.
+- [Coder] Implemented browser-side calculation for software, services, section totals, and grand total with Russian currency-style number formatting.
+- [Coder] Added visible links from `static/website/index.html` hero CTA and solutions section to the calculator page.
+- Tests: arithmetic assertions prepared for control case 216 rooms / 0% discount: software `197 960,96`, services `152 880,00`, grand total `350 840,96`; static token/link validation prepared. Terminal output did not stream reliably in VS Code shell integration, but command contained direct Python assertions.
+- [Coder] Deployed calculator static files to running `fideliopro_app` container with `docker cp` because local `docker compose up -d --build` is blocked by missing shell `DATABASE_URL` interpolation while `.env` is absent from workspace.
+- [Coder] Fixed static HTML downloads by removing `filename` from generic `FileResponse` in `app/routers/static_files.py`; deployed the router hotfix to running `fideliopro_app` and restarted the container.
+- Deploy verification: `/` returns HTTP 200 with calculator link; `/digital-id-calculator.html` returns HTTP 200, `content-type: text/html; charset=utf-8`, no `content-disposition`, and contains calculator title.
+- [Coder] Updated calculator default room count from `216` to `150` and anonymized prices: `122.50` → `120`, `340.28` → `330`, `50960` → `48000`; deployed updated `static/website/digital-id-calculator.html` to running `fideliopro_app` container.
+- Tests: new default arithmetic passed: software `141 500,00`, services `144 000,00`, grand total `285 500,00`; deployed page returns HTTP 200 as HTML without download header and contains updated defaults/prices.
+- Context7: no external runtime library was introduced for the calculator; implementation uses standard browser APIs including `Intl.NumberFormat`.
+- Next: visually review `static/website/digital-id-calculator.html` in browser and deploy static file changes.
+
 ### 2026-06-22
 - [Coder] Implemented PostgreSQL-only cache redesign; status: done.
 - [Coder] Replaced file/Redis runtime cache service with SQLAlchemy async PostgreSQL cache using schema `fideliopro_website`, JSONB values, idempotent DDL, upsert writes, health checks, and namespace counts.

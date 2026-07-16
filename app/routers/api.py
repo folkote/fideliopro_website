@@ -3,12 +3,11 @@ API routers for address cleaning endpoints.
 """
 
 import asyncio
-from typing import Union
-from fastapi import APIRouter, HTTPException, Query, Depends
-from fastapi.responses import PlainTextResponse, HTMLResponse
+from typing import Any, Dict
+from fastapi import APIRouter, HTTPException, Query, Body
+from fastapi.responses import PlainTextResponse, HTMLResponse, JSONResponse
 
 from ..config import settings
-from ..models.requests import AddressRequest
 from ..models.responses import ErrorResponse, HealthResponse
 from ..services.cache import cache_service
 from ..services.dadata import dadata_service
@@ -145,6 +144,70 @@ async def api_full_address(
         raise
     except Exception as e:
         logger.error("Full address API error", error=str(e), address=address[:50])
+        raise HTTPException(status_code=500, detail="An internal server error occurred")
+
+
+@router.post(
+    "/api/suggest/address",
+    response_class=JSONResponse,
+    summary="Proxy DaData address suggestions",
+    description=(
+        "Proxy DaData Suggestions address API and cache successful JSON responses "
+        "without changing the upstream response body"
+    ),
+    responses={
+        200: {
+            "description": "Full DaData Suggestions response",
+            "content": {
+                "application/json": {
+                    "example": {
+                        "suggestions": [
+                            {
+                                "value": "г Москва, ул Хабаровская",
+                                "unrestricted_value": "г Москва, ул Хабаровская",
+                                "data": {},
+                            }
+                        ]
+                    }
+                }
+            },
+        },
+        400: {"description": "Invalid request body"},
+        502: {"description": "DaData upstream client error"},
+        503: {"description": "DaData credentials/session unavailable"},
+        504: {"description": "DaData upstream timeout"},
+    },
+)
+async def suggest_address(
+    payload: Dict[str, Any] = Body(
+        ...,
+        description="DaData Suggestions address request body",
+        example={"query": "москва хабар", "count": 10},
+    )
+):
+    """
+    Proxy DaData address suggestions and return the upstream JSON unchanged.
+
+    The request body follows the DaData Suggestions address API documented in
+    README_dadata.md. Successful HTTP 200 responses are cached by the service
+    using the full request body as the cache-key source.
+    """
+    query = payload.get("query")
+    if not isinstance(query, str) or not query.strip():
+        raise HTTPException(status_code=400, detail="Query field is missing")
+
+    try:
+        status_code, response_payload = await dadata_service.suggest_address(payload)
+        return JSONResponse(content=response_payload, status_code=status_code)
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(
+            "DaData address suggestions API error",
+            error=str(e),
+            query=str(query)[:50],
+        )
         raise HTTPException(status_code=500, detail="An internal server error occurred")
 
 

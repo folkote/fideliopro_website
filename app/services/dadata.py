@@ -3,8 +3,10 @@ DaData API service for address cleaning and validation.
 """
 
 import asyncio
+import hashlib
+import json
 import time
-from typing import Any, Dict, Optional
+from typing import Any, Dict, Optional, Tuple
 
 import aiohttp
 from structlog.typing import FilteringBoundLogger
@@ -16,6 +18,7 @@ from .cache import cache_service
 
 DADATA_STREET_FIAS_NAMESPACE = "dadata_street_fias"
 DADATA_CLEANED_ADDRESS_NAMESPACE = "dadata_cleaned_address"
+DADATA_SUGGEST_ADDRESS_NAMESPACE = "dadata_suggest_address"
 
 
 class DaDataService:
@@ -24,6 +27,7 @@ class DaDataService:
     def __init__(self, logger_instance: FilteringBoundLogger = logger):
         self.logger = logger_instance
         self.base_url = "https://cleaner.dadata.ru/api/v1/clean"
+        self.suggestions_base_url = "https://suggestions.dadata.ru/suggestions/api/4_1/rs"
         self.session: Optional[aiohttp.ClientSession] = None
         self._health_check_cache: Optional[bool] = None
         self._health_check_timestamp: float = 0.0
@@ -220,6 +224,128 @@ class DaDataService:
             return cleaned_address
 
         return None
+
+    async def suggest_address(self, payload: Dict[str, Any]) -> Tuple[int, Dict[str, Any]]:
+        """Return DaData address suggestions with PostgreSQL caching.
+
+        Usage:
+            Minimal initialization::
+
+                await dadata_service.initialize()
+
+            Minimal happy-path call::
+
+                status_code, response = await dadata_service.suggest_address(
+                    {"query": "москва хабар", "count": 10}
+                )
+
+            Common error-handling case::
+
+                if status_code != 200:
+                    logger.warning("DaData suggestions request failed", status=status_code)
+
+        The request follows the DaData Suggestions address API contract described
+        in README_dadata.md and the official HTTP example:
+        POST /suggestions/api/4_1/rs/suggest/address with a JSON body.
+        Successful HTTP 200 JSON responses are cached under a deterministic key
+        derived from the complete incoming JSON body. Non-200 responses are not
+        cached so transient upstream failures and rate limits do not become
+        durable cache entries.
+        """
+        cache_key = self._suggest_address_cache_key(payload)
+        cached_response = await cache_service.get(
+            cache_key,
+            namespace=DADATA_SUGGEST_ADDRESS_NAMESPACE,
+        )
+
+        if cached_response is not None:
+            self.logger.info(
+                "Cache hit for DaData address suggestions",
+                query=str(payload.get("query", ""))[:50],
+            )
+            return 200, cached_response
+
+        if not settings.dadata_token:
+            self.logger.error("DaData token not configured")
+            return 503, {"detail": "DaData credentials not configured"}
+
+        try:
+            await self.initialize()
+
+            if not self.session:
+                self.logger.error("DaData session not initialized")
+                return 503, {"detail": "DaData session not initialized"}
+
+            async with self.session.post(
+                f"{self.suggestions_base_url}/suggest/address",
+                json=payload,
+            ) as response:
+                response_payload = await self._read_json_response(response)
+
+                if response.status == 200:
+                    await cache_service.set(
+                        cache_key,
+                        response_payload,
+                        namespace=DADATA_SUGGEST_ADDRESS_NAMESPACE,
+                        source="dadata-suggest-address",
+                    )
+                    self.logger.info(
+                        "DaData address suggestions cached",
+                        query=str(payload.get("query", ""))[:50],
+                        suggestions_count=len(response_payload.get("suggestions", [])),
+                    )
+                else:
+                    self.logger.warning(
+                        "DaData suggestions API returned non-200 status",
+                        status=response.status,
+                        query=str(payload.get("query", ""))[:50],
+                    )
+
+                return response.status, response_payload
+
+        except asyncio.TimeoutError:
+            self.logger.error(
+                "DaData suggestions request timeout",
+                query=str(payload.get("query", ""))[:50],
+            )
+            return 504, {"detail": "DaData request timeout"}
+
+        except aiohttp.ClientError as e:
+            self.logger.error(
+                "DaData suggestions client error",
+                error=str(e),
+                query=str(payload.get("query", ""))[:50],
+            )
+            return 502, {"detail": "DaData client error"}
+
+        except Exception as e:
+            self.logger.error(
+                "DaData suggestions unexpected error",
+                error=str(e),
+                query=str(payload.get("query", ""))[:50],
+            )
+            return 500, {"detail": "DaData suggestions request failed"}
+
+    def _suggest_address_cache_key(self, payload: Dict[str, Any]) -> str:
+        canonical_payload = json.dumps(
+            payload,
+            ensure_ascii=False,
+            sort_keys=True,
+            separators=(",", ":"),
+            default=str,
+        )
+        payload_hash = hashlib.sha256(canonical_payload.encode("utf-8")).hexdigest()
+        return f"sha256:{payload_hash}"
+
+    async def _read_json_response(self, response: aiohttp.ClientResponse) -> Dict[str, Any]:
+        try:
+            data = await response.json(content_type=None)
+            if isinstance(data, dict):
+                return data
+            return {"data": data}
+        except Exception:
+            response_text = await response.text()
+            return {"detail": response_text}
 
     async def health_check(self) -> bool:
         """
