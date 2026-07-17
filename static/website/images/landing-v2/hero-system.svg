@@ -17,7 +17,7 @@
 <g fill="url(#panel-hero-system)" stroke="#38bdf8" stroke-opacity=".38">
 <rect x="92" y="340" width="142" height="82" rx="20"/><rect x="284" y="394" width="142" height="82" rx="20"/><rect x="504" y="78" width="142" height="82" rx="20"/><rect x="562" y="390" width="142" height="82" rx="20"/>
 </g>
-<g fill="#dff7ff" font-family="Arial, sans-serif" font-size="20" font-weight="800"><text x="118" y="390">Web & Mobile</text><text x="314" y="444">Reports</text><text x="535" y="128">Integrations</text><text x="610" y="440">AI</text></g>
+<g fill="#dff7ff" font-family="Arial, sans-serif" font-size="20" font-weight="800"><text x="118" y="390">Web &amp; Mobile</text><text x="314" y="444">Reports</text><text x="535" y="128">Integrations</text><text x="610" y="440">AI</text></g>
 <g stroke="url(#g-hero-system)" stroke-width="4" stroke-linecap="round" fill="none"><path d="M470 330l-120 64"/><path d="M552 202l28-42"/><path d="M583 330l54 60"/><path d="M370 266L234 340"/></g>
 <g fill="#22d3ee"><circle cx="370" cy="266" r="7"/><circle cx="470" cy="330" r="6"/><circle cx="552" cy="202" r="6"/><circle cx="583" cy="330" r="6"/></g>
 <path d="M86 64h120M612 506h70" stroke="#eef7ff" stroke-opacity=".2" stroke-width="4" stroke-linecap="round"/>
