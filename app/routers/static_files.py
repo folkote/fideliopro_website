@@ -116,8 +116,15 @@ async def serve_static_file(filename: str, request: Request):
         # Determine file type and location
         file_path = None
         media_type = None
+        normalized_filename = filename.rstrip("/")
 
-        if filename.endswith(".sql"):
+        if normalized_filename in {"ru", "en", "es"}:
+            # Static locale directory indexes: /ru/, /en/, /es/.
+            # Keep using FileResponse without filename= so browsers render HTML.
+            file_path = Path(settings.website_dir) / normalized_filename / "index.html"
+            media_type = "text/html"
+
+        elif filename.endswith(".sql"):
             # SQL files
             file_path = Path(settings.sql_dir) / filename
             media_type = "text/plain"
@@ -189,9 +196,7 @@ async def serve_static_file(filename: str, request: Request):
 
         # Static file logging is handled by middleware
 
-        return FileResponse(
-            path=str(file_path), media_type=media_type, filename=filename
-        )
+        return FileResponse(path=str(file_path), media_type=media_type)
 
     except HTTPException:
         raise

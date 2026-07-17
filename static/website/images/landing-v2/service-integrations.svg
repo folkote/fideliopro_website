@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 220" role="img" aria-labelledby="title desc">
+<title id="title">Интеграции</title><desc id="desc">Dark corporate line-art illustration for Fidelio Pro landing page: data exchange with external systems.</desc>
+<defs>
+  <linearGradient id="g-service-integrations" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#22d3ee"/><stop offset="0.52" stop-color="#38bdf8"/><stop offset="1" stop-color="#2563eb"/></linearGradient>
+  <linearGradient id="panel-service-integrations" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#15233a" stop-opacity="0.86"/><stop offset="1" stop-color="#0b1628" stop-opacity="0.55"/></linearGradient>
+  <radialGradient id="glow-service-integrations" cx="50%" cy="35%" r="65%"><stop stop-color="#22d3ee" stop-opacity="0.32"/><stop offset="1" stop-color="#22d3ee" stop-opacity="0"/></radialGradient>
+  <filter id="soft-service-integrations" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="2.2"/></filter>
+</defs>
+<rect width="320" height="220" rx="28" fill="#07111f" fill-opacity="0"/>
+<circle cx="160" cy="108" r="104" fill="url(#glow-service-integrations)" filter="url(#soft-service-integrations)"/>
+<path d="M34 176C76 142 113 164 151 134c43-34 77-13 135-66" fill="none" stroke="#38bdf8" stroke-opacity=".12" stroke-width="2"/>
+<circle cx="92" cy="106" r="20" fill="#2563eb" fill-opacity=".22" stroke="#38bdf8"/>
+  <circle cx="160" cy="70" r="24" fill="#22d3ee" fill-opacity=".16" stroke="#22d3ee"/>
+  <circle cx="226" cy="122" r="22" fill="#7c3aed" fill-opacity=".18" stroke="#38bdf8"/>
+  <path d="M111 99l29-18M181 84l27 25M112 116l92 8" stroke="#38bdf8" stroke-opacity=".65" stroke-width="3"/>
+<path d="M48 42h54M218 184h42" stroke="#eef7ff" stroke-opacity=".18" stroke-width="3" stroke-linecap="round"/>
+</svg>

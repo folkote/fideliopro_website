@@ -1,965 +1,199 @@
 <!DOCTYPE html>
 <html lang="ru">
-	<head>
-		<meta charset="UTF-8" />
-		<meta
-			name="viewport"
-			content="width=device-width, initial-scale=1.0" />
-		<title>Fidelio.pro - Разработка модулей для Fidelio V8</title>
-		<meta
-			name="description"
-			content="Разработка модулей и интеграций для Fidelio V8. Большой опыт создания дополнительных модулей и техническая поддержка." />
-		<link
-			rel="shortcut icon"
-			href="images/logo-100x89.png"
-			type="image/x-icon" />
-
-		<style>
-			:root {
-				--primary-bg: #1e2a3a;
-				--secondary-bg: #2c3e50;
-				--accent-teal: #4dd0e1;
-				--accent-teal-light: #80deea;
-				--accent-teal-dark: #26a69a;
-				--accent-orange: #ff5722;
-				--accent-orange-bright: #ff6f00;
-				--text-primary: #ffffff;
-				--text-secondary: #e8e8e8;
-				--text-muted: #b0b0b0;
-				--gradient-primary: linear-gradient(
-					135deg,
-					var(--accent-teal) 0%,
-					var(--primary-bg) 100%
-				);
-				--gradient-orange: linear-gradient(
-					135deg,
-					var(--accent-orange) 0%,
-					var(--accent-orange-bright) 100%
-				);
-				--shadow-glow: 0 0 30px rgba(255, 87, 34, 0.3);
-				--shadow-teal: 0 0 20px rgba(77, 208, 225, 0.4);
-			}
-
-			* {
-				margin: 0;
-				padding: 0;
-				box-sizing: border-box;
-			}
-
-			body {
-				font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
-				background: var(--primary-bg);
-				color: var(--text-primary);
-				line-height: 1.6;
-				overflow-x: hidden;
-			}
-
-			/* Particles Background */
-			#particles-canvas {
-				position: fixed;
-				top: 0;
-				left: 0;
-				width: 100%;
-				height: 100%;
-				z-index: -1;
-				opacity: 0.6;
-			}
-
-			/* Smooth Scrolling */
-			html {
-				scroll-behavior: smooth;
-			}
-
-			/* Hero Section */
-			.hero {
-				min-height: 100vh;
-				display: flex;
-				align-items: center;
-				justify-content: center;
-				text-align: center;
-				position: relative;
-				background: var(--gradient-primary);
-				overflow: hidden;
-			}
-
-			.hero::before {
-				content: "";
-				position: absolute;
-				top: 0;
-				left: 0;
-				right: 0;
-				bottom: 0;
-				background: radial-gradient(
-					circle at 50% 50%,
-					rgba(77, 208, 225, 0.3) 0%,
-					transparent 70%
-				);
-				animation: pulse 4s ease-in-out infinite;
-			}
-
-			@keyframes pulse {
-				0%,
-				100% {
-					opacity: 0.3;
-				}
-				50% {
-					opacity: 0.6;
-				}
-			}
-
-			.hero-content {
-				z-index: 2;
-				max-width: 800px;
-				padding: 2rem;
-			}
-
-			/* Hero Logo Styles */
-			.hero-logo {
-				margin-bottom: 2rem;
-				animation: fadeInDown 1s ease-out both;
-			}
-
-			.logo-image {
-				max-width: 320px;
-				width: 100%;
-				height: auto;
-				border-radius: 20px;
-				box-shadow: 0 10px 30px rgba(77, 208, 225, 0.3);
-				transition: transform 0.3s ease, box-shadow 0.3s ease;
-			}
-
-			.logo-image:hover {
-				transform: scale(1.05);
-				box-shadow: 0 15px 40px rgba(77, 208, 225, 0.5);
-			}
-
-			@keyframes fadeInDown {
-				from {
-					opacity: 0;
-					transform: translateY(-30px);
-				}
-				to {
-					opacity: 1;
-					transform: translateY(0);
-				}
-			}
-
-			.hero h1 {
-				font-size: clamp(3rem, 8vw, 6rem);
-				font-weight: 700;
-				margin-bottom: 1rem;
-				background: var(--gradient-orange);
-				-webkit-background-clip: text;
-				-webkit-text-fill-color: transparent;
-				background-clip: text;
-				animation: glow 3s ease-in-out infinite alternate;
-			}
-
-			@keyframes glow {
-				from {
-					filter: drop-shadow(0 0 10px var(--accent-orange));
-				}
-				to {
-					filter: drop-shadow(0 0 20px var(--accent-orange-bright));
-				}
-			}
-
-			.hero-subtitle {
-				font-size: clamp(1.2rem, 3vw, 2rem);
-				margin-bottom: 1rem;
-				color: var(--text-secondary);
-				animation: fadeInUp 1s ease-out 0.5s both;
-			}
-
-			.hero-description {
-				font-size: clamp(1rem, 2vw, 1.3rem);
-				margin-bottom: 3rem;
-				color: var(--text-muted);
-				animation: fadeInUp 1s ease-out 1s both;
-			}
-
-			@keyframes fadeInUp {
-				from {
-					opacity: 0;
-					transform: translateY(30px);
-				}
-				to {
-					opacity: 1;
-					transform: translateY(0);
-				}
-			}
-
-			/* Buttons */
-			.btn-group {
-				display: flex;
-				gap: 1rem;
-				justify-content: center;
-				flex-wrap: wrap;
-				animation: fadeInUp 1s ease-out 1.5s both;
-			}
-
-			.btn {
-				padding: 1rem 2rem;
-				border: none;
-				border-radius: 50px;
-				font-size: 1.1rem;
-				font-weight: 600;
-				text-decoration: none;
-				display: inline-flex;
-				align-items: center;
-				gap: 0.5rem;
-				transition: all 0.3s ease;
-				cursor: pointer;
-				position: relative;
-				overflow: hidden;
-			}
-
-			.btn-primary {
-				background: var(--gradient-orange);
-				color: var(--primary-bg);
-				box-shadow: var(--shadow-glow);
-			}
-
-			.btn-primary:hover {
-				transform: translateY(-3px);
-				box-shadow: 0 10px 40px rgba(255, 87, 34, 0.5);
-			}
-
-			.btn-secondary {
-				background: transparent;
-				color: var(--text-primary);
-				border: 2px solid var(--accent-teal);
-				box-shadow: var(--shadow-teal);
-			}
-
-			.btn-secondary:hover {
-				background: var(--accent-teal);
-				transform: translateY(-3px);
-				box-shadow: 0 10px 40px rgba(77, 208, 225, 0.5);
-			}
-
-			/* Sections */
-			.section {
-				padding: 5rem 2rem;
-				max-width: 1200px;
-				margin: 0 auto;
-			}
-
-			.section-title {
-				font-size: clamp(2rem, 5vw, 3.5rem);
-				text-align: center;
-				margin-bottom: 3rem;
-				background: var(--gradient-orange);
-				-webkit-background-clip: text;
-				-webkit-text-fill-color: transparent;
-				background-clip: text;
-			}
-
-			.section-subtitle {
-				font-size: 1.3rem;
-				text-align: center;
-				color: var(--text-secondary);
-				margin-bottom: 4rem;
-				max-width: 600px;
-				margin-left: auto;
-				margin-right: auto;
-			}
-
-			/* Development Section */
-			.development-grid {
-				display: grid;
-				grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-				gap: 2rem;
-				margin-bottom: 4rem;
-			}
-
-			.feature-card {
-				background: var(--secondary-bg);
-				border-radius: 20px;
-				padding: 2rem;
-				text-align: center;
-				transition: all 0.3s ease;
-				border: 1px solid var(--accent-teal);
-				position: relative;
-				overflow: hidden;
-			}
-
-			.feature-card::before {
-				content: "";
-				position: absolute;
-				top: 0;
-				left: -100%;
-				width: 100%;
-				height: 100%;
-				background: linear-gradient(
-					90deg,
-					transparent,
-					rgba(255, 87, 34, 0.1),
-					transparent
-				);
-				transition: left 0.5s ease;
-			}
-
-			.feature-card:hover::before {
-				left: 100%;
-			}
-
-			.feature-card:hover {
-				transform: translateY(-10px);
-				box-shadow: var(--shadow-teal);
-				border-color: var(--accent-orange);
-			}
-
-			.feature-icon {
-				font-size: 3rem;
-				margin-bottom: 1rem;
-				color: var(--accent-orange);
-			}
-
-			.feature-title {
-				font-size: 1.5rem;
-				margin-bottom: 1rem;
-				color: var(--text-primary);
-			}
-
-			.feature-description {
-				color: var(--text-muted);
-				line-height: 1.6;
-			}
-
-			/* Solutions Grid */
-			.solutions-grid {
-				display: grid;
-				grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
-				gap: 2rem;
-			}
-
-			.solution-card {
-				background: var(--secondary-bg);
-				border-radius: 15px;
-				padding: 2rem;
-				border: 1px solid var(--accent-teal);
-				transition: all 0.3s ease;
-				position: relative;
-			}
-
-			.solution-card:hover {
-				transform: scale(1.02);
-				box-shadow: var(--shadow-glow);
-				border-color: var(--accent-orange);
-			}
-
-			.solution-title {
-				font-size: 1.3rem;
-				margin-bottom: 1rem;
-				color: var(--accent-orange);
-			}
-
-			.solution-description {
-				color: var(--text-secondary);
-				margin-bottom: 1rem;
-			}
-
-			.solution-features {
-				list-style: none;
-			}
-
-			.solution-features li {
-				color: var(--text-muted);
-				margin-bottom: 0.5rem;
-				padding-left: 1.5rem;
-				position: relative;
-			}
-
-			.solution-features li::before {
-				content: "✓";
-				position: absolute;
-				left: 0;
-				color: var(--accent-orange);
-				font-weight: bold;
-			}
-
-			/* Integrations Section */
-			.integrations-list {
-				display: grid;
-				grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-				gap: 1.5rem;
-				margin-bottom: 3rem;
-			}
-
-			.integration-item {
-				background: var(--secondary-bg);
-				padding: 1.5rem;
-				border-radius: 10px;
-				border-left: 4px solid var(--accent-orange);
-				transition: all 0.3s ease;
-			}
-
-			.integration-item:hover {
-				transform: translateX(10px);
-				box-shadow: var(--shadow-teal);
-			}
-
-			.integration-title {
-				font-size: 1.2rem;
-				margin-bottom: 0.5rem;
-				color: var(--text-primary);
-			}
-
-			.integration-description {
-				color: var(--text-muted);
-				font-size: 0.9rem;
-			}
-
-			/* Support Section */
-			.support-features {
-				display: grid;
-				grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-				gap: 2rem;
-				text-align: center;
-			}
-
-			.support-item {
-				padding: 1.5rem;
-			}
-
-			.support-icon {
-				font-size: 2.5rem;
-				color: var(--accent-orange);
-				margin-bottom: 1rem;
-			}
-
-			.support-title {
-				font-size: 1.2rem;
-				margin-bottom: 0.5rem;
-				color: var(--text-primary);
-			}
-
-			.support-description {
-				color: var(--text-muted);
-				font-size: 0.9rem;
-			}
-
-			/* Contact Section */
-			.contact-grid {
-				display: grid;
-				grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-				gap: 2rem;
-				text-align: center;
-			}
-
-			.contact-card {
-				background: var(--secondary-bg);
-				padding: 2rem;
-				border-radius: 15px;
-				border: 1px solid var(--accent-teal);
-				transition: all 0.3s ease;
-			}
-
-			.contact-card:hover {
-				transform: translateY(-5px);
-				box-shadow: var(--shadow-glow);
-				border-color: var(--accent-orange);
-			}
-
-			.contact-icon {
-				font-size: 3rem;
-				color: var(--accent-orange);
-				margin-bottom: 1rem;
-			}
-
-			.contact-title {
-				font-size: 1.5rem;
-				margin-bottom: 1rem;
-				color: var(--text-primary);
-			}
-
-			.contact-link {
-				color: var(--accent-orange);
-				text-decoration: none;
-				font-size: 1.1rem;
-				transition: color 0.3s ease;
-			}
-
-			.contact-link:hover {
-				color: var(--accent-orange-bright);
-			}
-
-			/* Footer */
-			.footer {
-				background: var(--secondary-bg);
-				padding: 2rem;
-				text-align: center;
-				border-top: 1px solid var(--accent-teal);
-			}
-
-			.footer-text {
-				color: var(--text-muted);
-			}
-
-			/* Responsive Design */
-			@media (max-width: 768px) {
-				.btn-group {
-					flex-direction: column;
-					align-items: center;
-				}
-
-				.btn {
-					width: 100%;
-					max-width: 300px;
-				}
-
-				.section {
-					padding: 3rem 1rem;
-				}
-
-				.development-grid,
-				.solutions-grid {
-					grid-template-columns: 1fr;
-				}
-
-				.logo-image {
-					max-width: 200px;
-				}
-			}
-
-			@media (max-width: 480px) {
-				.logo-image {
-					max-width: 150px;
-				}
-
-				.hero-content {
-					padding: 1rem;
-				}
-			}
-
-			/* Scroll animations */
-			.fade-in {
-				opacity: 0;
-				transform: translateY(30px);
-				transition: all 0.6s ease;
-			}
-
-			.fade-in.visible {
-				opacity: 1;
-				transform: translateY(0);
-			}
-		</style>
-	</head>
-	<body>
-		<canvas id="particles-canvas"></canvas>
-
-		<!-- Hero Section -->
-		<section class="hero">
-			<div class="hero-content">
-				<div class="hero-logo">
-					<img
-						src="images/fidelioprogearlogo.jpg"
-						alt="Fidelio Pro Gear Logo"
-						class="logo-image" />
-				</div>
-				<h1>FIDELIO.PRO</h1>
-				<div class="hero-subtitle">Разработка модулей для Fidelio V8</div>
-				<div class="hero-description">
-					Большой опыт интеграций и создания дополнительных модулей.<br />
-					Превращаем ваши идеи в готовые решения для отельного бизнеса.
-				</div>
-				<div class="btn-group">
-					<a
-						href="#development"
-						class="btn btn-primary">
-						🚀 Обсудить проект
-					</a>
-					<a
-						href="#solutions"
-						class="btn btn-secondary">
-						💡 Наши решения
-					</a>
-				</div>
-			</div>
-		</section>
-
-		<!-- Development Section -->
-		<section
-			id="development"
-			class="section fade-in">
-			<h2 class="section-title">Создаем решения для вашего отеля</h2>
-			<p class="section-subtitle">
-				Разрабатываем модули и интеграции, которые автоматизируют
-				бизнес-процессы и повышают эффективность работы
-			</p>
-
-			<div class="development-grid">
-				<div class="feature-card">
-					<div class="feature-icon">⚡</div>
-					<h3 class="feature-title">Разработка модулей</h3>
-					<p class="feature-description">
-						Создаем модули под любые задачи вашего отеля. От простых
-						автоматизаций до сложных бизнес-логик.
-					</p>
-				</div>
-
-				<div class="feature-card">
-					<div class="feature-icon">🔗</div>
-					<h3 class="feature-title">Интеграции</h3>
-					<p class="feature-description">
-						Подключаем Fidelio к внешним системам: POS, CRM, платежные системы,
-						сервисы бронирования.
-					</p>
-				</div>
-
-				<div class="feature-card">
-					<div class="feature-icon">🛠️</div>
-					<h3 class="feature-title">Доработки</h3>
-					<p class="feature-description">
-						Расширяем стандартный функционал Fidelio V8 для решения
-						специфических задач вашего отеля.
-					</p>
-				</div>
-
-				<div class="feature-card">
-					<div class="feature-icon">🤖</div>
-					<h3 class="feature-title">Автоматизация</h3>
-					<p class="feature-description">
-						Автоматизируем рутинные процессы: отчеты, уведомления, обновление
-						данных, контроль операций.
-					</p>
-				</div>
-			</div>
-		</section>
-
-		<!-- Solutions Section -->
-		<section
-			id="solutions"
-			class="section fade-in">
-			<h2 class="section-title">Наши готовые решения</h2>
-			<p class="section-subtitle">
-				Проверенные модули, которые уже работают в отелях наших клиентов
-			</p>
-
-			<div class="solutions-grid">
-				<div class="solution-card">
-					<h3 class="solution-title">Модуль "Завтраки с планшета"</h3>
-					<p class="solution-description">
-						Удобное управление пакетами услуг с мобильных устройств
-					</p>
-					<ul class="solution-features">
-						<li>Работает на любых планшетах</li>
-						<li>Интуитивный интерфейс</li>
-						<li>Учет израсходованных пакетов</li>
-						<li>Сохранение замеров температуры</li>
-					</ul>
-				</div>
-
-				<div class="solution-card">
-					<h3 class="solution-title">Модуль "Профиль брони"</h3>
-					<p class="solution-description">
-						Персональная страница гостя для самообслуживания
-					</p>
-					<ul class="solution-features">
-						<li>Онлайн предоплата и доплата</li>
-						<li>Загрузка документов</li>
-						<li>Заказ дополнительных услуг</li>
-						<li>Указание предпочтений</li>
-					</ul>
-				</div>
-
-				<div class="solution-card">
-					<h3 class="solution-title">Сканирование паспортов</h3>
-					<p class="solution-description">
-						Автоматическое распознавание данных документов
-					</p>
-					<ul class="solution-features">
-						<li>Распознавание паспортов РФ</li>
-						<li>Автозаполнение данных гостя</li>
-						<li>Проверка корректности</li>
-						<li>Архивирование изображений</li>
-					</ul>
-				</div>
-
-				<div class="solution-card">
-					<h3 class="solution-title">Автокоррекция по ИНН</h3>
-					<p class="solution-description">
-						Автоматическое обновление данных компаний
-					</p>
-					<ul class="solution-features">
-						<li>Получение данных из ЕГРЮЛ</li>
-						<li>Автозаполнение реквизитов</li>
-						<li>Склонение ФИО руководителя</li>
-						<li>Формирование договоров</li>
-					</ul>
-				</div>
-			</div>
-		</section>
-
-		<!-- Integrations Section -->
-		<section
-			id="integrations"
-			class="section fade-in">
-			<h2 class="section-title">Интеграции с внешними системами</h2>
-			<p class="section-subtitle">
-				Подключаем Fidelio к любым системам и сервисам
-			</p>
-
-			<div class="integrations-list">
-				<div class="integration-item">
-					<h4 class="integration-title">POS-системы</h4>
-					<p class="integration-description">IIKO, R-Keeper, Poster, УТ-11</p>
-				</div>
-
-				<div class="integration-item">
-					<h4 class="integration-title">Платежные системы</h4>
-					<p class="integration-description">Сбербанк, ВТБ, Тинькофф, PayPal</p>
-				</div>
-
-				<div class="integration-item">
-					<h4 class="integration-title">CRM и маркетинг</h4>
-					<p class="integration-description">Битрикс24, AmoCRM, MailChimp</p>
-				</div>
-
-				<div class="integration-item">
-					<h4 class="integration-title">Системы бронирования</h4>
-					<p class="integration-description">Booking.com, Expedia, Ostrovok</p>
-				</div>
-
-				<div class="integration-item">
-					<h4 class="integration-title">Контроль доступа</h4>
-					<p class="integration-description">СКУД, электронные замки</p>
-				</div>
-
-				<div class="integration-item">
-					<h4 class="integration-title">СМС и уведомления</h4>
-					<p class="integration-description">SMS.ru, Telegram Bot API</p>
-				</div>
-			</div>
-		</section>
-
-		<!-- Support Section -->
-		<section
-			id="support"
-			class="section fade-in">
-			<h2 class="section-title">Техническая поддержка</h2>
-			<p class="section-subtitle">Надежная поддержка всех наших решений</p>
-
-			<div class="support-features">
-				<div class="support-item">
-					<div class="support-icon">🕐</div>
-					<h4 class="support-title">24/7 поддержка</h4>
-					<p class="support-description">
-						Круглосуточная поддержка для клиентов
-					</p>
-				</div>
-
-				<div class="support-item">
-					<div class="support-icon">💬</div>
-					<h4 class="support-title">Консультации</h4>
-					<p class="support-description">
-						Без ограничений по времени и звонкам
-					</p>
-				</div>
-
-				<div class="support-item">
-					<div class="support-icon">⚡</div>
-					<h4 class="support-title">Быстрое решение</h4>
-					<p class="support-description">Оперативное устранение проблем</p>
-				</div>
-
-				<div class="support-item">
-					<div class="support-icon">📱</div>
-					<h4 class="support-title">Удобная связь</h4>
-					<p class="support-description">Telegram, Email</p>
-				</div>
-			</div>
-		</section>
-
-		<!-- Contact Section -->
-		<section
-			id="contact"
-			class="section fade-in">
-			<h2 class="section-title">Связаться с нами</h2>
-			<p class="section-subtitle">
-				Обсудим ваш проект и найдем оптимальное решение<br />
-				<small style="color: var(--text-muted); font-size: 0.9rem">
-					Связь в рабочие дни с 9:00 до 18:00 МСК
-				</small>
-			</p>
-
-			<div class="contact-grid">
-				<div class="contact-card">
-					<div class="contact-icon">📱</div>
-					<h4 class="contact-title">Telegram</h4>
-					<a
-						href="https://t.me/fideliopro"
-						class="contact-link"
-						target="_blank">
-						@fideliopro
-					</a>
-				</div>
-
-				<div class="contact-card">
-					<div class="contact-icon">✉️</div>
-					<h4 class="contact-title">Email</h4>
-					<a
-						href="mailto:fidelio@giorni.ru"
-						class="contact-link">
-						fidelio@giorni.ru
-					</a>
-				</div>
-			</div>
-		</section>
-
-		<!-- Footer -->
-		<footer class="footer">
-			<p class="footer-text">
-				© 2024 Fidelio.pro - Разработка модулей для Fidelio V8
-			</p>
-		</footer>
-
-		<script>
-			// Particles Animation
-			class ParticlesAnimation {
-				constructor() {
-					this.canvas = document.getElementById("particles-canvas");
-					this.ctx = this.canvas.getContext("2d");
-					this.particles = [];
-					this.mouse = { x: 0, y: 0 };
-
-					this.init();
-					this.animate();
-					this.bindEvents();
-				}
-
-				init() {
-					this.resize();
-					this.createParticles();
-				}
-
-				resize() {
-					this.canvas.width = window.innerWidth;
-					this.canvas.height = window.innerHeight;
-				}
-
-				createParticles() {
-					const particleCount = Math.floor(
-						(this.canvas.width * this.canvas.height) / 15000
-					);
-
-					for (let i = 0; i < particleCount; i++) {
-						this.particles.push({
-							x: Math.random() * this.canvas.width,
-							y: Math.random() * this.canvas.height,
-							vx: (Math.random() - 0.5) * 0.5,
-							vy: (Math.random() - 0.5) * 0.5,
-							size: Math.random() * 2 + 1,
-							opacity: Math.random() * 0.5 + 0.2,
-						});
-					}
-				}
-
-				animate() {
-					this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-
-					this.particles.forEach((particle, index) => {
-						// Update position
-						particle.x += particle.vx;
-						particle.y += particle.vy;
-
-						// Mouse interaction
-						const dx = this.mouse.x - particle.x;
-						const dy = this.mouse.y - particle.y;
-						const distance = Math.sqrt(dx * dx + dy * dy);
-
-						if (distance < 100) {
-							const force = (100 - distance) / 100;
-							particle.vx -= (dx / distance) * force * 0.01;
-							particle.vy -= (dy / distance) * force * 0.01;
-						}
-
-						// Boundary check
-						if (particle.x < 0 || particle.x > this.canvas.width)
-							particle.vx *= -1;
-						if (particle.y < 0 || particle.y > this.canvas.height)
-							particle.vy *= -1;
-
-						// Draw particle
-						this.ctx.beginPath();
-						this.ctx.arc(particle.x, particle.y, particle.size, 0, Math.PI * 2);
-						this.ctx.fillStyle = `rgba(255, 87, 34, ${particle.opacity})`;
-						this.ctx.fill();
-
-						// Draw connections
-						this.particles.slice(index + 1).forEach((otherParticle) => {
-							const dx = particle.x - otherParticle.x;
-							const dy = particle.y - otherParticle.y;
-							const distance = Math.sqrt(dx * dx + dy * dy);
-
-							if (distance < 120) {
-								this.ctx.beginPath();
-								this.ctx.moveTo(particle.x, particle.y);
-								this.ctx.lineTo(otherParticle.x, otherParticle.y);
-								this.ctx.strokeStyle = `rgba(77, 208, 225, ${
-									0.3 * (1 - distance / 120)
-								})`;
-								this.ctx.lineWidth = 0.5;
-								this.ctx.stroke();
-							}
-						});
-					});
-
-					requestAnimationFrame(() => this.animate());
-				}
-
-				bindEvents() {
-					window.addEventListener("resize", () => {
-						this.resize();
-						this.particles = [];
-						this.createParticles();
-					});
-
-					window.addEventListener("mousemove", (e) => {
-						this.mouse.x = e.clientX;
-						this.mouse.y = e.clientY;
-					});
-				}
-			}
-
-			// Scroll animations
-			const observerOptions = {
-				threshold: 0.1,
-				rootMargin: "0px 0px -50px 0px",
-			};
-
-			const observer = new IntersectionObserver((entries) => {
-				entries.forEach((entry) => {
-					if (entry.isIntersecting) {
-						entry.target.classList.add("visible");
-					}
-				});
-			}, observerOptions);
-
-			// Initialize
-			document.addEventListener("DOMContentLoaded", () => {
-				// Start particles animation
-				new ParticlesAnimation();
-
-				// Observe elements for scroll animations
-				document.querySelectorAll(".fade-in").forEach((el) => {
-					observer.observe(el);
-				});
-
-				// Smooth scrolling for anchor links
-				document.querySelectorAll('a[href^="#"]').forEach((anchor) => {
-					anchor.addEventListener("click", function (e) {
-						e.preventDefault();
-						const target = document.querySelector(this.getAttribute("href"));
-						if (target) {
-							target.scrollIntoView({
-								behavior: "smooth",
-							});
-						}
-					});
-				});
-			});
-		</script>
-	</body>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Fidelio Pro — поддержка, интеграции и разработка для Fidelio V8 / Suite8</title>
+  <meta name="description" content="Поддержка и модернизация Fidelio V8 и Suite8: интеграции, веб-модули, отчётность, автоматизация, Oracle, резервное копирование и AI-решения для отелей." />
+  <meta name="theme-color" content="#07111f" />
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="Fidelio Pro — поддержка, интеграции и разработка для Fidelio V8 / Suite8" />
+  <meta property="og:description" content="Развиваем Fidelio и Suite8 под задачи современного отеля без полной замены вашей PMS." />
+  <meta property="og:url" content="https://fidelio.pro/" />
+  <meta property="og:locale" content="ru_RU" />
+  <link rel="canonical" href="https://fidelio.pro/" />
+  <link rel="alternate" hreflang="ru" href="https://fidelio.pro/ru/" />
+  <link rel="alternate" hreflang="en" href="https://fidelio.pro/en/" />
+  <link rel="alternate" hreflang="es" href="https://fidelio.pro/es/" />
+  <link rel="alternate" hreflang="x-default" href="https://fidelio.pro/" />
+  <link rel="shortcut icon" href="img/favicon.ico" type="image/x-icon" />
+  <link rel="icon" href="images/logo-100x89.png" type="image/png" />
+  <link rel="stylesheet" href="css/landing-v2.css" />
+</head>
+<body>
+  <a class="skip-link" href="#main">Перейти к содержанию</a>
+
+  <header class="site-header" data-site-header>
+    <div class="container header-inner">
+      <a class="brand" href="#top" aria-label="Fidelio Pro — на первый экран">
+        <img class="brand-logo" src="images/logo-100x89.png" alt="Fidelio Pro" width="44" height="40" />
+        <span class="brand-text">Fidelio<span>Pro</span></span>
+      </a>
+      <button class="nav-toggle" type="button" aria-label="Открыть меню" aria-expanded="false" aria-controls="main-nav" data-nav-toggle>
+        <span></span><span></span><span></span>
+      </button>
+      <nav class="main-nav" id="main-nav" data-main-nav aria-label="Основная навигация">
+        <a href="#services">Услуги</a>
+        <a href="#solutions">Решения</a>
+        <a href="#integrations">Интеграции</a>
+        <a href="#workflow">Как мы работаем</a>
+        <a href="#partners">Для партнёров</a>
+        <a href="#contacts">Контакты</a>
+      </nav>
+      <nav class="language-switcher" aria-label="Выбор языка"><a href="ru/" hreflang="ru" lang="ru" aria-current="page">RU</a><a href="en/" hreflang="en" lang="en">EN</a><a href="es/" hreflang="es" lang="es">ES</a></nav>
+      <a class="header-cta" href="https://t.me/fideliopro" target="_blank" rel="noopener">Telegram</a>
+    </div>
+  </header>
+
+  <main id="main">
+    <section class="hero section" id="top" aria-labelledby="hero-title">
+      <div class="hero-orb hero-orb-a" aria-hidden="true"></div>
+      <div class="hero-orb hero-orb-b" aria-hidden="true"></div>
+      <div class="container hero-grid">
+        <div class="hero-copy">
+          <p class="eyebrow">Fidelio V8 / Oracle Hospitality Suite8</p>
+          <h1 id="hero-title">Развиваем Fidelio и Suite8 под задачи современного отеля</h1>
+          <p class="hero-subtitle">Поддержка, интеграции, веб-модули, отчётность и автоматизация — без полной замены вашей PMS.</p>
+          <div class="hero-actions" aria-label="Обсудить задачу">
+            <a class="btn btn-primary" href="#contacts">Обсудить задачу</a>
+            <a class="btn btn-secondary" href="#solutions">Посмотреть решения</a>
+          </div>
+          <p class="hero-stack">Fidelio V8 · Suite8 · Oracle · Интеграции · Web &amp; Mobile · AI и аналитика</p>
+        </div>
+        <div class="hero-panel visual-panel">
+          <img class="hero-illustration" src="images/landing-v2/hero-system.svg" alt="Схема модернизации PMS: Fidelio / Suite8, Hotel Connector, веб-интерфейсы, интеграции, отчёты и AI" width="760" height="560" decoding="async" fetchpriority="high" />
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="services" aria-labelledby="services-title">
+      <div class="container">
+        <div class="section-heading">
+          <p class="eyebrow">Чем мы занимаемся</p>
+          <h2 id="services-title">Комплексные IT-решения для отелей</h2>
+          <p>От устранения отдельной ошибки до разработки новой системы, интегрированной с инфраструктурой отеля.</p>
+        </div>
+        <div class="card-grid services-grid">
+          <article class="card"><img class="card-visual" src="images/landing-v2/service-support.svg" alt="Диагностика и сопровождение Fidelio / Suite8" width="320" height="220" loading="lazy" decoding="async" /><span class="card-icon">01</span><h3>Поддержка Fidelio и Suite8</h3><p>Диагностика ошибок, восстановление работоспособности, настройка системы, консультации пользователей и сопровождение гостиничных процессов.</p></article>
+          <article class="card"><img class="card-visual" src="images/landing-v2/service-modules.svg" alt="Дополнительная бизнес-логика и автоматизация" width="320" height="220" loading="lazy" decoding="async" /><span class="card-icon">02</span><h3>Разработка и доработка модулей</h3><p>Создание дополнительной бизнес-логики, автоматизация операций и расширение стандартных возможностей PMS под требования конкретного отеля.</p></article>
+          <article class="card"><img class="card-visual" src="images/landing-v2/service-integrations.svg" alt="Обмен данными с внешними системами" width="320" height="220" loading="lazy" decoding="async" /><span class="card-icon">03</span><h3>Интеграции</h3><p>Обмен данными с системами бронирования, платёжными сервисами, электронными замками, POS-системами, CRM, сервисами уведомлений и другими внешними решениями.</p></article>
+          <article class="card"><img class="card-visual" src="images/landing-v2/service-web-interfaces.svg" alt="Мобильные и браузерные рабочие места" width="320" height="220" loading="lazy" decoding="async" /><span class="card-icon">04</span><h3>Современные веб-интерфейсы</h3><p>Мобильные и браузерные рабочие места для сотрудников и руководителей: бронирования, housekeeping, карточки гостей, задачи, услуги и контроль операций.</p></article>
+          <article class="card"><img class="card-visual" src="images/landing-v2/service-analytics-ai.svg" alt="Управленческие панели и AI-инструменты" width="320" height="220" loading="lazy" decoding="async" /><span class="card-icon">05</span><h3>Отчётность, аналитика и AI</h3><p>Новые отчёты, управленческие панели, автоматические сводки, поиск по гостиничным данным и AI-инструменты для руководства и сотрудников.</p></article>
+          <article class="card"><img class="card-visual" src="images/landing-v2/service-oracle-infra.svg" alt="Oracle Database, резервное копирование и инфраструктура" width="320" height="220" loading="lazy" decoding="async" /><span class="card-icon">06</span><h3>Oracle и инфраструктура</h3><p>Работа с Oracle Database, производительностью, миграциями, резервным копированием, восстановлением данных, Docker-сервисами и локальной инфраструктурой отеля.</p></article>
+        </div>
+      </div>
+    </section>
+
+    <section class="section section-alt" id="solutions" aria-labelledby="solutions-title">
+      <div class="container">
+        <div class="section-heading">
+          <p class="eyebrow">Готовые направления</p>
+          <h2 id="solutions-title">Решения, которые уже можно внедрить</h2>
+          <p>Показываем понятные сценарии модернизации без длинного каталога и без остановки привычной работы отеля.</p>
+        </div>
+        <div class="card-grid solutions-grid">
+          <article class="card solution featured"><img class="card-visual" src="images/landing-v2/solution-digital-id.svg" alt="Заселение по Цифровому ID через QR-код" width="320" height="220" loading="lazy" decoding="async" /><span class="pill">Digital ID</span><h3>Заселение по Цифровому ID</h3><p>Сканирование QR-кода, получение данных документа и автоматическое заполнение карточки гостя в Fidelio / Suite8.</p><a class="card-link" href="digital-id-calculator.html">Открыть калькулятор стоимости</a></article>
+          <article class="card solution"><img class="card-visual" src="images/landing-v2/solution-passport-scan.svg" alt="Сканирование и распознавание документов гостя" width="320" height="220" loading="lazy" decoding="async" /><span class="pill">Front Office</span><h3>Сканирование паспортов</h3><p>Распознавание документов, заполнение данных гостя, проверка полей и сохранение изображений в соответствии с процессами отеля.</p></article>
+          <article class="card solution"><img class="card-visual" src="images/landing-v2/solution-reservation-profile.svg" alt="Профиль бронирования и самообслуживание гостя" width="320" height="220" loading="lazy" decoding="async" /><span class="pill">Guest web</span><h3>Профиль бронирования и самообслуживание гостя</h3><p>Персональная веб-страница бронирования: оплата, загрузка документов, заказ дополнительных услуг и передача предпочтений.</p></article>
+          <article class="card solution"><img class="card-visual" src="images/landing-v2/solution-web-companion.svg" alt="Web Companion поверх существующей PMS" width="320" height="220" loading="lazy" decoding="async" /><span class="pill">Suite8 UI</span><h3>Web Companion для Suite8</h3><p>Современные браузерные и мобильные интерфейсы поверх существующей PMS без сложной миграции и остановки работы отеля.</p></article>
+          <article class="card solution" id="integrations"><img class="card-visual" src="images/landing-v2/solution-integrations.svg" alt="Интеграционный хаб для внешних систем" width="320" height="220" loading="lazy" decoding="async" /><span class="pill">Data exchange</span><h3>Интеграции с внешними системами</h3><p>Подключение внешних решений через API, файловый обмен, локальные агенты, базы данных, облачные сервисы, оборудование и нестандартные протоколы.</p></article>
+          <article class="card solution"><img class="card-visual" src="images/landing-v2/solution-reports-dashboards.svg" alt="Отчёты и управленческие панели" width="320" height="220" loading="lazy" decoding="async" /><span class="pill">BI</span><h3>Отчёты и управленческие панели</h3><p>Отчётность для экрана и печати, ежедневные показатели, загрузка, продажи, выручка, операции и контроль ключевых KPI.</p></article>
+          <article class="card solution"><img class="card-visual" src="images/landing-v2/solution-backup-monitoring.svg" alt="Резервное копирование и мониторинг" width="320" height="220" loading="lazy" decoding="async" /><span class="pill">Ops</span><h3>Резервное копирование и мониторинг</h3><p>Автоматические резервные копии, контроль выполнения, уведомления об ошибках и помощь с восстановлением.</p></article>
+          <article class="card solution"><img class="card-visual" src="images/landing-v2/solution-custom-development.svg" alt="Индивидуальная разработка под процессы отеля" width="320" height="220" loading="lazy" decoding="async" /><span class="pill">Custom</span><h3>Индивидуальная разработка</h3><p>Если готового решения нет, Fidelio Pro проектирует и разрабатывает его под процессы конкретного отеля.</p></article>
+        </div>
+      </div>
+    </section>
+
+    <section class="section architecture" aria-labelledby="architecture-title">
+      <div class="container architecture-grid">
+        <div>
+          <p class="eyebrow">Главное преимущество</p>
+          <h2 id="architecture-title">Не заменяем работающую систему — делаем её современной</h2>
+          <p>Многие гостиничные системы надёжно работают годами, но их интерфейсы, отчёты и возможности интеграции уже не соответствуют современным требованиям.</p>
+          <p>Fidelio Pro добавляет к существующей PMS новые веб-интерфейсы, интеграции, автоматизацию и аналитику. Отель сохраняет привычные процессы и данные, но получает современные инструменты для сотрудников, гостей и руководства.</p>
+        </div>
+        <div class="architecture-flow visual-panel">
+          <img class="architecture-illustration" src="images/landing-v2/architecture-modernization.svg" alt="Архитектура: Fidelio / Suite8 → Hotel Connector → Web-приложения, интеграции, отчёты и AI" width="840" height="420" loading="lazy" decoding="async" />
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="why" aria-labelledby="why-title">
+      <div class="container">
+        <div class="section-heading compact"><p class="eyebrow">Почему Fidelio Pro</p><h2 id="why-title">Практичный технический партнёр для гостиничной инфраструктуры</h2></div>
+        <div class="quad-grid">
+          <article class="mini-card"><img class="mini-card-visual" src="images/landing-v2/advantage-hospitality-processes.svg" alt="Знание гостиничных процессов" width="320" height="220" loading="lazy" decoding="async" /><h3>Знаем гостиничные процессы</h3><p>Понимаем работу службы приёма, бронирования, бухгалтерии, ресторанов, housekeeping и IT-службы отеля.</p></article>
+          <article class="mini-card"><img class="mini-card-visual" src="images/landing-v2/advantage-existing-infrastructure.svg" alt="Работа с существующей инфраструктурой" width="320" height="220" loading="lazy" decoding="async" /><h3>Работаем с существующей инфраструктурой</h3><p>Учитываем реальные версии PMS, Oracle, рабочие станции, локальные серверы и уже подключённые интерфейсы.</p></article>
+          <article class="mini-card"><img class="mini-card-visual" src="images/landing-v2/advantage-practical-solutions.svg" alt="Практичные технические решения" width="320" height="220" loading="lazy" decoding="async" /><h3>Решаем конкретные задачи</h3><p>Сначала определяем проблему, затем предлагаем технически и экономически разумное решение.</p></article>
+          <article class="mini-card"><img class="mini-card-visual" src="images/landing-v2/advantage-after-launch-support.svg" alt="Поддержка после запуска" width="320" height="220" loading="lazy" decoding="async" /><h3>Сопровождаем после запуска</h3><p>Помогаем с внедрением, тестированием, обучением, исправлениями и дальнейшим развитием решения.</p></article>
+        </div>
+      </div>
+    </section>
+
+    <section class="section section-alt" id="workflow" aria-labelledby="workflow-title">
+      <div class="container">
+        <div class="section-heading"><p class="eyebrow">Процесс</p><h2 id="workflow-title">Как мы работаем</h2><p>Двигаемся короткими понятными этапами: от изучения задачи до поддержки после запуска.</p></div>
+        <ol class="steps-list">
+          <li><img class="step-visual" src="images/landing-v2/workflow-discovery.svg" alt="Изучение задачи и ограничений" width="320" height="220" loading="lazy" decoding="async" /><span>01</span><h3>Изучаем задачу</h3><p>Уточняем текущую конфигурацию, ограничения и желаемый результат.</p></li>
+          <li><img class="step-visual" src="images/landing-v2/workflow-solution-design.svg" alt="Подготовка архитектуры и предложения" width="320" height="220" loading="lazy" decoding="async" /><span>02</span><h3>Предлагаем решение</h3><p>Формируем архитектуру, состав работ, стоимость и этапы внедрения.</p></li>
+          <li><img class="step-visual" src="images/landing-v2/workflow-development-testing.svg" alt="Разработка и тестирование решения" width="320" height="220" loading="lazy" decoding="async" /><span>03</span><h3>Разрабатываем и тестируем</h3><p>Создаём решение и проверяем его на тестовом контуре или ограниченной группе пользователей.</p></li>
+          <li><img class="step-visual" src="images/landing-v2/workflow-launch-support.svg" alt="Запуск и дальнейшая поддержка" width="320" height="220" loading="lazy" decoding="async" /><span>04</span><h3>Запускаем и поддерживаем</h3><p>Внедряем решение в рабочую среду и сопровождаем его дальнейшую эксплуатацию.</p></li>
+        </ol>
+      </div>
+    </section>
+
+    <section class="section partners" id="partners" aria-labelledby="partners-title">
+      <div class="container partners-card">
+        <img class="partners-visual" src="images/landing-v2/partners-integration.svg" alt="Интеграция партнёрских продуктов с гостиничными системами" width="320" height="220" loading="lazy" decoding="async" />
+        <div>
+          <p class="eyebrow">Для технологических партнёров</p>
+          <h2 id="partners-title">Интегрируем ваши решения с гостиничными системами</h2>
+          <p>Помогаем разработчикам, производителям оборудования и поставщикам гостиничных сервисов подключить свои продукты к Fidelio V8 / Suite8 и другим элементам IT-инфраструктуры отеля.</p>
+          <p>Работаем с API, файловым обменом, базами данных, локальными агентами, облачными сервисами, оборудованием и нестандартными протоколами.</p>
+        </div>
+        <a class="btn btn-primary" href="#contacts">Обсудить интеграцию</a>
+      </div>
+    </section>
+
+    <section class="section final-cta" id="contacts" aria-labelledby="contacts-title">
+      <div class="container contact-grid">
+        <div>
+          <p class="eyebrow">Контакты</p>
+          <h2 id="contacts-title">Расскажите, какую задачу нужно решить</h2>
+          <p>Опишите используемую систему, текущую проблему или желаемый результат. Мы изучим задачу и предложим практический вариант реализации.</p>
+          <p class="support-note">Формат, время работы и условия поддержки зависят от выбранного варианта обслуживания.</p>
+        </div>
+        <div class="contact-card" aria-label="Контакты">
+          <a class="contact-link primary" href="https://t.me/fideliopro" target="_blank" rel="noopener">Написать в Telegram</a>
+          <a class="contact-link" href="mailto:fidelio@giorni.ru">Отправить запрос на fidelio@giorni.ru</a>
+          <a class="contact-link muted" href="digital-id-calculator.html">Калькулятор Digital ID</a>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container footer-grid">
+      <div>
+        <a class="brand footer-brand" href="#top" aria-label="Fidelio Pro — на первый экран">
+          <img class="brand-logo" src="images/logo-100x89.png" alt="Fidelio Pro" width="40" height="36" />
+          <span class="brand-text">Fidelio<span>Pro</span></span>
+        </a>
+        <p>Поддержка, интеграции и разработка для гостиничных IT-систем.</p>
+      </div>
+      <div class="footer-links">
+        <a href="#services">Услуги</a>
+        <a href="#solutions">Решения</a>
+        <a href="#partners">Партнёрам</a>
+        <a href="https://t.me/fideliopro" target="_blank" rel="noopener">Telegram</a>
+        <a href="mailto:fidelio@giorni.ru">fidelio@giorni.ru</a>
+      </div>
+    </div>
+    <div class="container legal">
+      <p>Fidelio Pro является независимым сервисным и интеграционным проектом. Названия Fidelio, Suite8, Oracle и другие товарные знаки используются только для описания совместимости и принадлежат их правообладателям.</p>
+    </div>
+  </footer>
+
+  <script src="js/landing-v2.js" defer></script>
+</body>
 </html>

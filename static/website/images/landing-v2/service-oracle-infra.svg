@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 220" role="img" aria-labelledby="title desc">
+<title id="title">Oracle и инфраструктура</title><desc id="desc">Dark corporate line-art illustration for Fidelio Pro landing page: database infrastructure and backups.</desc>
+<defs>
+  <linearGradient id="g-service-oracle-infra" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#22d3ee"/><stop offset="0.52" stop-color="#38bdf8"/><stop offset="1" stop-color="#2563eb"/></linearGradient>
+  <linearGradient id="panel-service-oracle-infra" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#15233a" stop-opacity="0.86"/><stop offset="1" stop-color="#0b1628" stop-opacity="0.55"/></linearGradient>
+  <radialGradient id="glow-service-oracle-infra" cx="50%" cy="35%" r="65%"><stop stop-color="#22d3ee" stop-opacity="0.32"/><stop offset="1" stop-color="#22d3ee" stop-opacity="0"/></radialGradient>
+  <filter id="soft-service-oracle-infra" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="2.2"/></filter>
+</defs>
+<rect width="320" height="220" rx="28" fill="#07111f" fill-opacity="0"/>
+<circle cx="160" cy="108" r="104" fill="url(#glow-service-oracle-infra)" filter="url(#soft-service-oracle-infra)"/>
+<path d="M34 176C76 142 113 164 151 134c43-34 77-13 135-66" fill="none" stroke="#38bdf8" stroke-opacity=".12" stroke-width="2"/>
+<rect x="96" y="74" width="128" height="62" rx="16" fill="url(#panel-service-oracle-infra)" stroke="#38bdf8" stroke-opacity=".34"/>
+  <path d="M116 96h88M116 116h58" stroke="#22d3ee" stroke-width="5" stroke-linecap="round"/>
+  <circle cx="203" cy="116" r="8" fill="#38bdf8"/>
+  <path d="M104 138a36 36 0 0 1 50-50 42 42 0 0 1 75 26 30 30 0 0 1-5 59H106a22 22 0 0 1-2-35z" fill="url(#panel-service-oracle-infra)" stroke="#38bdf8" stroke-opacity=".4"/>
+  <path d="M160 134v-38M160 96l-18 18M160 96l18 18" stroke="#22d3ee" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M48 42h54M218 184h42" stroke="#eef7ff" stroke-opacity=".18" stroke-width="3" stroke-linecap="round"/>
+</svg>

@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 220" role="img" aria-labelledby="title desc">
+<title id="title">Digital ID</title><desc id="desc">Dark corporate line-art illustration for Fidelio Pro landing page: QR code check-in.</desc>
+<defs>
+  <linearGradient id="g-solution-digital-id" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#22d3ee"/><stop offset="0.52" stop-color="#38bdf8"/><stop offset="1" stop-color="#2563eb"/></linearGradient>
+  <linearGradient id="panel-solution-digital-id" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#15233a" stop-opacity="0.86"/><stop offset="1" stop-color="#0b1628" stop-opacity="0.55"/></linearGradient>
+  <radialGradient id="glow-solution-digital-id" cx="50%" cy="35%" r="65%"><stop stop-color="#22d3ee" stop-opacity="0.32"/><stop offset="1" stop-color="#22d3ee" stop-opacity="0"/></radialGradient>
+  <filter id="soft-solution-digital-id" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="2.2"/></filter>
+</defs>
+<rect width="320" height="220" rx="28" fill="#07111f" fill-opacity="0"/>
+<circle cx="160" cy="108" r="104" fill="url(#glow-solution-digital-id)" filter="url(#soft-solution-digital-id)"/>
+<path d="M34 176C76 142 113 164 151 134c43-34 77-13 135-66" fill="none" stroke="#38bdf8" stroke-opacity=".12" stroke-width="2"/>
+<rect x="116" y="58" width="68" height="114" rx="16" fill="url(#panel-solution-digital-id)" stroke="#38bdf8" stroke-opacity=".45"/>
+  <path d="M132 82h36M132 104h22M132 126h36" stroke="#22d3ee" stroke-width="4" stroke-linecap="round"/>
+  <circle cx="150" cy="154" r="5" fill="#38bdf8"/>
+  <rect x="90" y="55" width="140" height="140" rx="18" fill="url(#panel-solution-digital-id)" stroke="#38bdf8" stroke-opacity=".45"/>
+  <path d="M116 84h28v28h-28zM176 84h28v28h-28zM116 144h28v28h-28z" fill="none" stroke="#22d3ee" stroke-width="6"/>
+  <path d="M170 144h12v12h-12zM194 144h12v36h-12zM158 168h24v12h-24z" fill="#38bdf8" opacity=".88"/>
+<path d="M48 42h54M218 184h42" stroke="#eef7ff" stroke-opacity=".18" stroke-width="3" stroke-linecap="round"/>
+</svg>

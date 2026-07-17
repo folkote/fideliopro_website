@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 840 420" role="img" aria-labelledby="title desc">
+<title id="title">Архитектура модернизации PMS</title><desc id="desc">Fidelio / Suite8 passes through Hotel Connector to web applications, integrations, reports and AI analytics.</desc>
+<defs>
+  <linearGradient id="g-architecture-modernization" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#22d3ee"/><stop offset="0.52" stop-color="#38bdf8"/><stop offset="1" stop-color="#2563eb"/></linearGradient>
+  <linearGradient id="panel-architecture-modernization" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#15233a" stop-opacity="0.86"/><stop offset="1" stop-color="#0b1628" stop-opacity="0.55"/></linearGradient>
+  <radialGradient id="glow-architecture-modernization" cx="50%" cy="35%" r="65%"><stop stop-color="#22d3ee" stop-opacity="0.32"/><stop offset="1" stop-color="#22d3ee" stop-opacity="0"/></radialGradient>
+  <filter id="soft-architecture-modernization" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="2.2"/></filter>
+</defs>
+<rect width="840" height="420" rx="34" fill="#07111f" fill-opacity="0"/>
+<circle cx="420" cy="205" r="210" fill="url(#glow-architecture-modernization)" filter="url(#soft-architecture-modernization)"/>
+<g stroke="#38bdf8" stroke-opacity=".14"><path d="M72 94h690M72 210h690M72 326h690"/><path d="M168 54v320M420 54v320M672 54v320"/></g>
+<g fill="url(#panel-architecture-modernization)" stroke="#38bdf8" stroke-opacity=".38"><rect x="58" y="150" width="190" height="118" rx="24"/><rect x="326" y="132" width="218" height="154" rx="28"/><rect x="632" y="62" width="150" height="70" rx="18"/><rect x="632" y="150" width="150" height="70" rx="18"/><rect x="632" y="238" width="150" height="70" rx="18"/><rect x="632" y="326" width="150" height="58" rx="18"/></g>
+<g fill="#dff7ff" font-family="Arial, sans-serif" font-weight="800"><text x="92" y="214" font-size="28">Fidelio / Suite8</text><text x="366" y="205" font-size="30">Hotel Connector</text><text x="660" y="106" font-size="18">Web apps</text><text x="658" y="194" font-size="18">Integrations</text><text x="666" y="282" font-size="18">Reports</text><text x="684" y="362" font-size="18">AI</text></g>
+<g stroke="url(#g-architecture-modernization)" stroke-width="7" stroke-linecap="round" fill="none"><path d="M248 210h78"/><path d="M544 210c40 0 48-113 88-113"/><path d="M544 210h88"/><path d="M544 210c40 0 48 63 88 63"/><path d="M544 210c54 0 42 145 88 145"/></g>
+<g fill="#22d3ee"><circle cx="326" cy="210" r="8"/><circle cx="544" cy="210" r="8"/><circle cx="632" cy="97" r="7"/><circle cx="632" cy="185" r="7"/><circle cx="632" cy="273" r="7"/><circle cx="632" cy="355" r="7"/></g>
+</svg>

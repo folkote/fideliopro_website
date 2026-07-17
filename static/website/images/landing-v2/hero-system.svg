@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 560" role="img" aria-labelledby="title desc">
+<title id="title">Современная схема PMS</title><desc id="desc">Fidelio / Suite8 core connects through Hotel Connector to web interfaces, integrations, reports and AI analytics.</desc>
+<defs>
+  <linearGradient id="g-hero-system" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#22d3ee"/><stop offset="0.52" stop-color="#38bdf8"/><stop offset="1" stop-color="#2563eb"/></linearGradient>
+  <linearGradient id="panel-hero-system" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#15233a" stop-opacity="0.86"/><stop offset="1" stop-color="#0b1628" stop-opacity="0.55"/></linearGradient>
+  <radialGradient id="glow-hero-system" cx="50%" cy="35%" r="65%"><stop stop-color="#22d3ee" stop-opacity="0.32"/><stop offset="1" stop-color="#22d3ee" stop-opacity="0"/></radialGradient>
+  <filter id="soft-hero-system" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="2.2"/></filter>
+</defs>
+<rect width="760" height="560" rx="42" fill="#07111f" fill-opacity="0"/>
+<circle cx="390" cy="255" r="245" fill="url(#glow-hero-system)" filter="url(#soft-hero-system)"/>
+<g stroke="#38bdf8" stroke-opacity=".16"><path d="M58 112h642M58 236h642M58 360h642M58 484h642"/><path d="M124 54v448M300 54v448M476 54v448M652 54v448"/></g>
+<rect x="78" y="116" width="235" height="142" rx="26" fill="url(#panel-hero-system)" stroke="#38bdf8" stroke-opacity=".34"/>
+<text x="108" y="168" fill="#22d3ee" font-family="Arial, sans-serif" font-size="20" font-weight="700">PMS CORE</text><text x="108" y="204" fill="#dff7ff" font-family="Arial, sans-serif" font-size="30" font-weight="800">Fidelio / Suite8</text>
+<rect x="370" y="202" width="250" height="128" rx="28" fill="url(#panel-hero-system)" stroke="#22d3ee" stroke-opacity=".62"/>
+<text x="408" y="252" fill="#22d3ee" font-family="Arial, sans-serif" font-size="18" font-weight="700">CONNECTOR LAYER</text><text x="408" y="288" fill="#dff7ff" font-family="Arial, sans-serif" font-size="30" font-weight="800">Hotel Connector</text>
+<path d="M313 187C354 187 347 266 370 266" fill="none" stroke="url(#g-hero-system)" stroke-width="6" stroke-linecap="round"/>
+<g fill="url(#panel-hero-system)" stroke="#38bdf8" stroke-opacity=".38">
+<rect x="92" y="340" width="142" height="82" rx="20"/><rect x="284" y="394" width="142" height="82" rx="20"/><rect x="504" y="78" width="142" height="82" rx="20"/><rect x="562" y="390" width="142" height="82" rx="20"/>
+</g>
+<g fill="#dff7ff" font-family="Arial, sans-serif" font-size="20" font-weight="800"><text x="118" y="390">Web & Mobile</text><text x="314" y="444">Reports</text><text x="535" y="128">Integrations</text><text x="610" y="440">AI</text></g>
+<g stroke="url(#g-hero-system)" stroke-width="4" stroke-linecap="round" fill="none"><path d="M470 330l-120 64"/><path d="M552 202l28-42"/><path d="M583 330l54 60"/><path d="M370 266L234 340"/></g>
+<g fill="#22d3ee"><circle cx="370" cy="266" r="7"/><circle cx="470" cy="330" r="6"/><circle cx="552" cy="202" r="6"/><circle cx="583" cy="330" r="6"/></g>
+<path d="M86 64h120M612 506h70" stroke="#eef7ff" stroke-opacity=".2" stroke-width="4" stroke-linecap="round"/>
+</svg>
