@@ -1,22 +1,32 @@
 # Active Context
 
 ## Current Focus
-- Completed and closed: unified DaData Cleaner runtime cache now uses the versioned full-response namespace `dadata_clean_address_full_v1` while preserving external HTTP compatibility.
-- Compatibility endpoints [`api_address()`](../app/routers/api.py:39) and [`api_full_address()`](../app/routers/api.py:100) were implemented, deployed, validated, committed as `306ddac`, and pushed to `origin/main` on branch `main`.
-- Runtime use of old partial namespaces `dadata_street_fias` and `dadata_cleaned_address` is retired for Cleaner compatibility endpoint calls; old rows remain physically present only as historical cache data.
+- New focus: implement Fidelio Pro Landing Page V2 from [`plans/landing_page_v2.md`](../plans/landing_page_v2.md) using the detailed Code handoff plan in [`plans/landing_page_v2_implementation_plan.md`](../plans/landing_page_v2_implementation_plan.md).
+- Target direction: modern dark corporate landing for `fidelio.pro`, preserving simple contact scenarios, static serving, favicon/logo, Telegram/email links, and the existing Digital ID calculator at [`static/website/digital-id-calculator.html`](../static/website/digital-id-calculator.html).
+- Confirmed implementation decisions: static routing; SVG illustrations as separate files; skip integrations-list confirmation for now; no complex backend contact contract or advanced anti-spam in the first stage; generic 24/7 support wording is allowed if it avoids unsupported SLA promises.
 
 ## Next Steps (ordered)
-1. [Closed] Planning, documentation, implementation, deployment, validation, commit, and push for the unified DaData Cleaner full-response cache are complete.
-2. [Operator optional] Leave old partial namespace rows in place unless a separate cleanup task is explicitly approved; no migration into `dadata_clean_address_full_v1` is possible from derived partial values.
-3. [Documentation follow-up] Commit this final Memory Bank synthesis separately because implementation commit `306ddac` was already pushed before closure documentation was added.
+1. [Coder] Execute only Task 1 from [`plans/landing_page_v2_implementation_plan.md`](../plans/landing_page_v2_implementation_plan.md): base RU landing in [`static/website/index.html`](../static/website/index.html) plus dark design system in `static/website/css/landing-v2.css`.
+2. [Coder] Preserve Telegram, email, favicon/logo, and the link to [`digital-id-calculator.html`](../static/website/digital-id-calculator.html); do not rewrite the calculator.
+3. [Coder] Do not implement multilingual routing, EN/ES pages, complete SVG package, or backend contact-form changes in the first Code task.
+4. [Debug] After Task 1, validate `/` and [`digital-id-calculator.html`](../static/website/digital-id-calculator.html) render as HTML without download behavior and verify no horizontal scroll from 320 px.
+5. [Orchestrator] Sequence later Code tasks for SVG package, responsive/accessibility hardening, static locale routing, EN/ES content, contact UX, SEO/legal validation, and deployment smoke checks.
 
 ## Delegation Map
 - Architect: owns Memory Bank plan, ADR, acceptance criteria, and handoff clarity.
-- Coder: implements the service-level replacement in [`app/services/dadata.py`](../app/services/dadata.py:20), updates endpoint-adjacent tests, and avoids source changes outside the compatibility requirement.
-- Debug: validates runtime cache behavior, metrics namespace counts, and deployed compatibility responses.
-- Operators: may later decide whether to archive or delete old namespace rows from [`cache_entries`](../app/services/cache.py:48); this is not required for the implementation and must not be treated as a data migration into the new namespace.
+- Coder: implements small independent landing tasks from the plan, starting with the RU dark landing baseline only.
+- Debug: validates static rendering, mobile behavior, links, MIME/content-disposition behavior, and deployment smoke checks.
+- Orchestrator: approves sequencing and prevents broad scope creep across locale routing, SVG creation, and calculator preservation.
 
-## Closure Evidence
+## Landing V2 Acceptance Criteria
+- `/` renders the new RU landing as browser HTML, not a downloaded file.
+- Telegram and email contact links are present.
+- Link to [`static/website/digital-id-calculator.html`](../static/website/digital-id-calculator.html) is preserved.
+- Existing favicon/logo behavior is preserved or replaced intentionally with equivalent branded assets.
+- No horizontal scroll from 320 px viewport width.
+- First Code task does not rewrite [`static/website/digital-id-calculator.html`](../static/website/digital-id-calculator.html), does not implement multilingual routing, and does not add a complex backend contact-form contract.
+
+## Previous Closure Evidence
 - Commit and push: `306ddac` with message `Unify DaData cleaner address cache`, pushed from branch `main` to `origin/main`.
 - Deployed container: `fideliopro_app` on host port `7080`, using image `fideliopro_fastapi_repo-fideliopro:dadata-clean-cache-20260716T165914Z`; Docker health reported healthy.
 - Deployed validation: one new `dadata_clean_address_full_v1` row was created for the shared Cleaner smoke address, repeated compatibility endpoint calls reused it, and old namespaces `dadata_street_fias` plus `dadata_cleaned_address` stayed unchanged.
@@ -70,3 +80,5 @@
 - DaData credentials and database URL are operational configuration, not source-controlled values.
 - The Cleaner API is paid; cache correctness depends on a deterministic canonical address key and a versioned envelope.
 - No application source code changes are made in Architect mode; implementation belongs to Coder mode.
+- Landing implementation must preserve static website compatibility and should avoid heavy frontend frameworks.
+- SVG landing illustrations must be separate files under [`static/website`](../static/website) assets, not inline monoliths in HTML.

@@ -64,6 +64,4 @@ select
         and ydet_ycat_id = ycat.ycat_id and zpos_zdco_id = zdco_id and zdco_stats_type = 2
         and zdco_cdt = 1 and nvl(ydet_ygrp_id, 0) > 0), 0)
 from wdat, ycat
-where wdat_date in (select ydet_date from ydet)
-and nvl(ycat_disabled, 0) = 0
-and wdat_date >= to_date('010922', 'ddmmyy')
+where wdat_date >= to_date('010922', 'ddmmyy')
