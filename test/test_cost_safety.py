@@ -1,7 +1,11 @@
 import unittest
+from ipaddress import ip_address, ip_network
 from pathlib import Path
 from unittest.mock import AsyncMock, patch
 
+from starlette.requests import Request
+
+from app import rate_limit
 from app.routers import api
 from app.rate_limit import limiter
 from app.config import settings
@@ -52,6 +56,26 @@ class CostSafeHealthChecksTest(unittest.IsolatedAsyncioTestCase):
 
 
 class PaidEndpointRateLimitTest(unittest.TestCase):
+    @staticmethod
+    def _request(peer: str, forwarded_for: str | list[str] | None = None) -> Request:
+        headers = []
+        if forwarded_for is not None:
+            values = [forwarded_for] if isinstance(forwarded_for, str) else forwarded_for
+            headers.extend((b"x-forwarded-for", value.encode("ascii")) for value in values)
+        return Request(
+            {
+                "type": "http",
+                "method": "GET",
+                "scheme": "http",
+                "path": "/apiaddress/api",
+                "raw_path": b"/apiaddress/api",
+                "query_string": b"",
+                "headers": headers,
+                "client": (peer, 12345),
+                "server": ("testserver", 80),
+            }
+        )
+
     def test_paid_dadata_endpoints_have_rate_limit_rules(self) -> None:
         for endpoint in (api.api_address, api.api_full_address, api.suggest_address):
             with self.subTest(endpoint=endpoint.__name__):
@@ -60,6 +84,62 @@ class PaidEndpointRateLimitTest(unittest.TestCase):
                     limiter._route_limits.get(route_name),
                     f"{endpoint.__name__} is missing a SlowAPI rate limit",
                 )
+
+    def test_trusted_proxy_uses_distinct_forwarded_client_ips(self) -> None:
+        trusted = (ip_network("10.0.0.25/32"),)
+        first = rate_limit.rate_limit_client_ip(
+            self._request("10.0.0.25", "198.51.100.10"), trusted
+        )
+        second = rate_limit.rate_limit_client_ip(
+            self._request("10.0.0.25", "198.51.100.11"), trusted
+        )
+
+        self.assertEqual(first, "198.51.100.10")
+        self.assertEqual(second, "198.51.100.11")
+        self.assertNotEqual(first, second)
+
+    def test_untrusted_peer_cannot_spoof_forwarded_client_ip(self) -> None:
+        trusted = (ip_network("10.0.0.25/32"),)
+        key = rate_limit.rate_limit_client_ip(
+            self._request("203.0.113.20", "198.51.100.99"), trusted
+        )
+
+        self.assertEqual(key, "203.0.113.20")
+
+    def test_forwarded_chain_ignores_spoofed_leftmost_value(self) -> None:
+        trusted = (ip_network("10.0.0.25/32"),)
+        key = rate_limit.rate_limit_client_ip(
+            self._request("10.0.0.25", "192.0.2.66, 198.51.100.15"), trusted
+        )
+
+        self.assertEqual(key, "198.51.100.15")
+
+    def test_docker_gateway_is_not_a_trusted_proxy(self) -> None:
+        gateway = ip_address("172.19.0.1")
+        self.assertFalse(
+            any(gateway in network for network in rate_limit.TRUSTED_PROXY_NETWORKS)
+        )
+
+        first = rate_limit.rate_limit_client_ip(
+            self._request("172.19.0.1", "198.51.100.10")
+        )
+        second = rate_limit.rate_limit_client_ip(
+            self._request("172.19.0.1", "198.51.100.11")
+        )
+        self.assertEqual(first, "172.19.0.1")
+        self.assertEqual(second, "172.19.0.1")
+
+    def test_duplicate_forwarded_for_headers_fail_closed_to_peer(self) -> None:
+        trusted = (ip_network("10.0.0.25/32"),)
+        key = rate_limit.rate_limit_client_ip(
+            self._request(
+                "10.0.0.25",
+                ["198.51.100.10", "198.51.100.11"],
+            ),
+            trusted,
+        )
+
+        self.assertEqual(key, "10.0.0.25")
 
 
 class ExampleEnvironmentSafetyTest(unittest.TestCase):

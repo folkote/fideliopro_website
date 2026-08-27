@@ -51,6 +51,11 @@ class Settings(BaseSettings):
     rate_limit_enabled: bool = True
     rate_limit_requests: int = 100
     rate_limit_window: int = 60  # seconds
+    rate_limit_trusted_proxies: list[str] = [
+        "10.0.0.25/32",
+        "127.0.0.1/32",
+        "::1/128",
+    ]
 
     # Static files settings
     static_dir: str = "static"
