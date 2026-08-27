@@ -8,8 +8,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.exceptions import RequestValidationError
-from slowapi import Limiter, _rate_limit_exceeded_handler
-from slowapi.util import get_remote_address
+from slowapi import _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
 from slowapi.middleware import SlowAPIMiddleware
 
@@ -25,10 +24,7 @@ from .routers import api, static_files
 from .services.cache import cache_service
 from .services.dadata import dadata_service
 from .services.geolocation import geolocation_service
-
-
-# Rate limiter
-limiter = Limiter(key_func=get_remote_address)
+from .rate_limit import limiter, paid_api_limit
 
 
 @asynccontextmanager
@@ -113,7 +109,7 @@ app.include_router(static_files.router, tags=["Static Files"])
 
 # Rate limited endpoints
 @app.get("/api/limited-test")
-@limiter.limit(f"{settings.rate_limit_requests}/{settings.rate_limit_window}second")
+@limiter.limit(paid_api_limit)
 async def limited_test(request):
     """Test endpoint with rate limiting."""
     return {"message": "This endpoint is rate limited"}

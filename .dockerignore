@@ -1,0 +1,12 @@
+# Never send local credentials or runtime data to the Docker daemon.
+.git
+.env
+.env.*
+!.env.example
+
+logs/
+data/
+cache/
+__pycache__/
+*.py[cod]
+.pytest_cache/

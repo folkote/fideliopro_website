@@ -6,7 +6,6 @@ import asyncio
 import hashlib
 import json
 import re
-import time
 from typing import Any, Dict, Optional, Tuple
 
 import aiohttp
@@ -32,8 +31,6 @@ class DaDataService:
         self.base_url = "https://cleaner.dadata.ru/api/v1/clean"
         self.suggestions_base_url = "https://suggestions.dadata.ru/suggestions/api/4_1/rs"
         self.session: Optional[aiohttp.ClientSession] = None
-        self._health_check_cache: Optional[bool] = None
-        self._health_check_timestamp: float = 0.0
 
         # Validate configuration
         if not settings.dadata_token or not settings.dadata_secret:
@@ -454,34 +451,10 @@ class DaDataService:
             return {"detail": response_text}
 
     async def health_check(self) -> bool:
-        """
-        Check if DaData service is available.
-
-        Uses an in-memory status memo for 5 minutes to avoid repeated API calls.
-        Each health check call costs money, so we cache the result.
-
-        Returns:
-            True if service is healthy, False otherwise
-        """
-        current_time = time.time()
-        if (
-            self._health_check_cache is not None
-            and (current_time - self._health_check_timestamp) < 300
-        ):
-            return self._health_check_cache
-
-        try:
-            # Try to clean a simple test address
-            test_result = await self.clean_address("Москва")
-            self._health_check_cache = test_result is not None
-            self._health_check_timestamp = current_time
-            return self._health_check_cache
-
-        except Exception as e:
-            self.logger.error("DaData health check failed", error=str(e))
-            self._health_check_cache = False
-            self._health_check_timestamp = current_time
+        """Return local client readiness without making a paid API call."""
+        if not settings.dadata_token or not settings.dadata_secret:
             return False
+        return self.session is not None and not self.session.closed
 
 
 # Global DaData service instance

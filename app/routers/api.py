@@ -4,7 +4,7 @@ API routers for address cleaning endpoints.
 
 import asyncio
 from typing import Any, Dict
-from fastapi import APIRouter, HTTPException, Query, Body
+from fastapi import APIRouter, HTTPException, Query, Body, Request
 from fastapi.responses import PlainTextResponse, HTMLResponse, JSONResponse
 
 from ..config import settings
@@ -13,6 +13,7 @@ from ..services.cache import cache_service
 from ..services.dadata import dadata_service
 from ..services.geolocation import geolocation_service
 from ..utils.logger import logger, safe_log_data
+from ..rate_limit import limiter, paid_api_limit
 from datetime import datetime
 
 
@@ -36,7 +37,9 @@ router = APIRouter()
         500: {"description": "Internal server error"},
     },
 )
+@limiter.limit(paid_api_limit)
 async def api_address(
+    request: Request,
     address: str = Query(
         ...,
         description="Address to be cleaned and validated",
@@ -97,7 +100,9 @@ async def api_address(
         500: {"description": "Internal server error"},
     },
 )
+@limiter.limit(paid_api_limit)
 async def api_full_address(
+    request: Request,
     address: str = Query(
         ...,
         description="Address to be cleaned and validated",
@@ -178,7 +183,9 @@ async def api_full_address(
         504: {"description": "DaData upstream timeout"},
     },
 )
+@limiter.limit(paid_api_limit)
 async def suggest_address(
+    request: Request,
     payload: Dict[str, Any] = Body(
         ...,
         description="DaData Suggestions address request body",

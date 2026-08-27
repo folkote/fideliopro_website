@@ -209,20 +209,10 @@ class GeolocationService:
             return True  # Invalid format, treat as private
 
     async def health_check(self) -> bool:
-        """
-        Check if geolocation service is available.
-
-        Returns:
-            True if at least one service is healthy
-        """
-        try:
-            # Test with a known public IP (Google DNS)
-            result = await self.get_location("8.8.8.8")
-            return bool(result.get("country"))
-
-        except Exception as e:
-            self.logger.error("Geolocation health check failed", error=str(e))
-            return False
+        """Return local client readiness without an external lookup."""
+        if not settings.geolocation_enabled:
+            return True
+        return self.session is not None and not self.session.closed
 
 
 # Global geolocation service instance
