@@ -1,10 +1,10 @@
-import re
 import unittest
 from pathlib import Path
-from unittest.mock import AsyncMock
+from unittest.mock import AsyncMock, patch
 
 from app.routers import api
 from app.rate_limit import limiter
+from app.config import settings
 from app.services.dadata import DaDataService
 from app.services.geolocation import GeolocationService
 
@@ -19,8 +19,28 @@ class CostSafeHealthChecksTest(unittest.IsolatedAsyncioTestCase):
         service.session = _OpenSession()
         service.clean_address = AsyncMock(side_effect=AssertionError("paid Cleaner call"))
 
-        self.assertTrue(await service.health_check())
+        with (
+            patch.object(settings, "dadata_token", "test-token"),
+            patch.object(settings, "dadata_secret", "test-secret"),
+        ):
+            self.assertTrue(await service.health_check())
         service.clean_address.assert_not_awaited()
+
+    async def test_dadata_health_check_requires_credentials_and_open_session(self) -> None:
+        service = DaDataService()
+        with (
+            patch.object(settings, "dadata_token", ""),
+            patch.object(settings, "dadata_secret", ""),
+        ):
+            self.assertFalse(await service.health_check())
+
+        with (
+            patch.object(settings, "dadata_token", "test-token"),
+            patch.object(settings, "dadata_secret", "test-secret"),
+        ):
+            self.assertFalse(await service.health_check())
+            service.session = type("ClosedSession", (), {"closed": True})()
+            self.assertFalse(await service.health_check())
 
     async def test_geolocation_health_check_never_calls_external_lookup(self) -> None:
         service = GeolocationService()
@@ -50,9 +70,8 @@ class ExampleEnvironmentSafetyTest(unittest.TestCase):
                 key, value = line.split("=", 1)
                 values[key] = value
 
-        for key in ("DADATA_TOKEN", "DADATA_SECRET"):
-            with self.subTest(key=key):
-                self.assertNotRegex(values.get(key, ""), re.compile(r"^[0-9a-f]{32,}$"))
+        self.assertEqual(values.get("DADATA_TOKEN"), "replace_with_dadata_token")
+        self.assertEqual(values.get("DADATA_SECRET"), "replace_with_dadata_secret")
         self.assertIn("user:password@", values.get("DATABASE_URL", ""))
 
     def test_docker_build_context_excludes_environment_files(self) -> None:
