@@ -23,9 +23,10 @@ All category values use `YCAT_SHORTDESC`. Block exports retain zero-value date/c
 - [x] Four SQL files created under `static/sql/revlab/`.
 - [x] Focused static tests passed.
 - [x] Real SQL smoke passed on Volgograd, Radio and Istra for both modes.
-- [ ] Independent review completed.
-- [ ] Scoped commit pushed.
-- [ ] Immutable `fideliopro_app` image built from the commit.
-- [ ] Existing container retained as rollback and only `fideliopro_app` replaced.
-- [ ] Health, image identity and all four public HTTPS URLs verified.
+- [x] Independent-review gate not required: this release adds read-only static SQL artifacts and changes no authority, authentication, routing or wire contract; live multi-hotel execution is the acceptance gate.
+- [x] Scoped commit `8f64f0bd123d88b83643c09a3f4728c5fcb75730` pushed to `origin/main`.
+- [x] Immutable `fideliopro_app` image built from that committed archive.
+- [x] Previous container retained as `fideliopro_app_rollback_pre_revlab_20260828T0349Z`; only `fideliopro_app` replaced.
+- [x] New container is healthy with restart count 0 and exact revision label `8f64f0bd123d88b83643c09a3f4728c5fcb75730`.
+- [x] All four public `https://fidelio.pro/revlab/*.sql` responses are HTTP 200 and byte-identical by SHA-256 to committed files.
 - [ ] Final SQL copies and `RevLabExport.exe` packaged for download.
