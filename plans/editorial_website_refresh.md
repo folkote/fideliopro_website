@@ -20,8 +20,13 @@ Surface: Decide/Learn, a B2B hotel-system service website, not a product dashboa
 - Illustration XML/size/external-content checks passed. Graphics are not fake product screens.
 - Audit before repair: excessive gradients/glass, equal tile grids, rounded icon decorations. After repair: primary composition and treatment replaced; inherited secondary technical art remains, no new stats/testimonials/claims.
 
-## Release gates
-Pending independent source review, commit/push, immutable static-only build from the current exact running image and committed website files. Fresh backend/scripts/SQL parity before and after; preserve previous container under a unique rollback name; use prior verified bounded switch with both-side Docker OomKillDisable normalization. Verify exact public HTML/CSS/SVG bytes, health/image/restarts, original calculator and SQL, browser rendering. Update with actual evidence after release.
+## Verified release
+- Independent source review PASS; all 11 reviewed source fingerprints matched before committing. Final-source 25-combination browser matrix rerun passed after mobile wrapping refinements. Reproducible check is committed as `tests/browser_editorial_check.py` (mount website at `/website`, script at `/check.py`, writable evidence at `/evidence`; run with existing `admin-next-playwright-python:1.58.0`, `--network none`, `--shm-size 256m`, `--entrypoint python ... /check.py`).
+- Source commit `0d24382bd22451c0c8772ed7ebb14ed18fa0fd84` pushed to origin/main. Immutable image `fideliopro-editorial:0d24382bd22451c0c8772ed7ebb14ed18fa0fd84`, image ID `sha256:35985932d0fba018c68aa881f872e59b97b145a82d2576a7788814530cd15d6e`.
+- Release used the previously reviewed switch pattern, fresh exact identities/parity files, extended byte smoke for all locale pages/new CSS/all SVGs. Full configuration, normalized HostConfig, mounts, network aliases, image and health checks passed. Previous container retained stopped as `fideliopro_app_rollback_editorial`; older `fideliopro_app_rollback_cases` also remains stopped. Account for retained Compose labels on future reconciliation.
+- Public HTTPS readback passed: root, RU/EN/ES, case page, editorial stylesheet, all four graphics, unchanged calculator. Public SQL bytes unchanged. Full app/scripts/SQL runtime hash parity passed before and after.
+- Public browser repeated at 1440 and 390 across all five pages: 10 combinations passed; new CSS/all images loaded, one H1, corrected fiscal heading, <=8px card radii, no horizontal overflow. Prior isolated screenshots were also visually reviewed, not just DOM-tested.
+- Application healthy, zero restarts; no unrelated service replaced. `support@fidelio.pro` delivery remains untested as agreed.
 
 ## Notes
 `support@fidelio.pro` remains displayed, mailbox setup is user's later task. Broader conversion/SEO/form/service-page work is outside this release. Do not alter unrelated untracked docker-compose.override.yml.
