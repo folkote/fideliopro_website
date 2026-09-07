@@ -82,7 +82,7 @@ h3 { line-height: 1.35; font-weight: 650; }
 .contact-link { font-weight: 650; }
 .site-footer { background: #0a131c; }
 /* Case index: an editorial strip, not another equal-weight feature grid. */
-#cases { background: #e8ecee; --text: #172b37; --muted: #435764; --muted-2: #566976; --teal: #1a6660; --line: #becbd1; color: var(--text); }
+#cases { background: var(--bg-2); }
 .case-index { display: grid; grid-template-columns: 1fr; gap: 0; }
 .case-index .card { display: grid; grid-template-columns: minmax(200px, 30%) 1fr; gap: 32px; align-items: center; background: transparent; padding: 28px 0; border: 0; border-top: 1px solid var(--line); border-radius: 0; }
 .case-index .card:last-child { border-bottom: 1px solid var(--line); }
@@ -93,7 +93,7 @@ h3 { line-height: 1.35; font-weight: 650; }
 .case-index .card .case-category { margin-top: 0; }
 .case-index .card-link { margin-top: 10px; }
 /* Long-form cases: readable columns and explicit boundaries. */
-.case-page { background: #e8ecee; }
+.case-page { background: var(--bg); }
 .case-page .site-header { color: #edf1f3; }
 .case-page .header-inner { justify-content: space-between; flex-wrap: nowrap; }
 .case-page .header-cta { display: inline-flex; min-height: 44px; align-items: center; }
@@ -102,7 +102,7 @@ h3 { line-height: 1.35; font-weight: 650; }
 .case-intro h1 { max-width: 760px; }
 .case-toc { display: flex; flex-wrap: wrap; gap: 8px 26px; margin-top: 24px; }
 .case-toc a { color: var(--teal); min-height: 44px; display: inline-flex; align-items: center; text-underline-offset: 5px; }
-.case-page .case-study { padding: clamp(60px, 7vw, 92px) 0; scroll-margin-top: 100px; --text: #172b37; --muted: #435764; --muted-2: #566976; --teal: #1a6660; --line: #becbd1; color: var(--text); background: #e8ecee; border-bottom: 1px solid var(--line); }
+.case-page .case-study { padding: clamp(60px, 7vw, 92px) 0; scroll-margin-top: 100px; color: var(--text); background: var(--bg-2); border-bottom: 1px solid var(--line); }
 .case-layout { display: grid; grid-template-columns: minmax(0, .8fr) minmax(0, 1.2fr); gap: 60px; align-items: start; }
 .case-summary h2 { font-size: clamp(1.8rem, 2.8vw, 2.4rem); }
 .case-summary figure { margin: 28px 0 0; }

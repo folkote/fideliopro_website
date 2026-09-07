@@ -29,6 +29,11 @@ with sync_playwright() as pw:
             assert not d['headerOverflow'],(path,width,'header overflow')
             assert d['h1']==1
             assert not d['broken'],d['broken']
+            assert page.locator('a[href*="digital-id-calculator"]').count()==0
+            for surface in page.locator('#cases, .case-study').all():
+                assert surface.evaluate('el=>getComputedStyle(el).backgroundColor')=='rgb(16, 29, 43)'
+                assert surface.evaluate('el=>getComputedStyle(el).color')=='rgb(237, 241, 243)'
+            assert page.request.get('http://127.0.0.1:8765/digital-id-calculator.html').status==404
             assert all(float(v.removesuffix('px'))<=8 for v in d['radii']),d
             if path in ['/','/ru/','/cases.html']:assert d['setup']
             if path=='/' and width<=820:

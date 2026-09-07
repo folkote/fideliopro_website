@@ -17,7 +17,7 @@ class EditorialWebsiteTests(unittest.TestCase):
 
     def test_editorial_css_on_all_locales_and_details(self):
         for name in ['index.html', 'ru/index.html', 'en/index.html', 'es/index.html', 'cases.html']:
-            self.assertIn('css/editorial.css?v=1', (ROOT / name).read_text())
+            self.assertIn('css/editorial.css?v=2', (ROOT / name).read_text())
         css = (ROOT / 'css/editorial.css').read_text()
         self.assertIn('--radius-md: 6px', css)
         self.assertIn('focus-visible', css)
