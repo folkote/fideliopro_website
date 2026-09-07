@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="640" height="360" viewBox="0 0 640 360" role="img" aria-labelledby="fiscal-title fiscal-desc">
+  <title id="fiscal-title">Fiscal configuration and document routing</title>
+  <desc id="fiscal-desc">Configuration sliders feed two distinct branches representing agent and principal roles. The routes lead to sale and refund documents distinguished by opposing directional arrows, with no receipt numbers, amounts, tax rates or personal data.</desc>
+  <rect width="640" height="360" fill="#101d2b"/>
+  <g fill="none" stroke="#8397a8" stroke-width="1.5">
+    <path d="M54 294h532" opacity=".4"/>
+    <path d="M62 76V60h36m480 0h-36m36 0v16" opacity=".55"/>
+  </g>
+  <!-- Three physical-style configuration sliders, no UI chrome. -->
+  <g fill="#101d2b" stroke="#dce5eb" stroke-width="2" stroke-linejoin="miter">
+    <path d="M84 126h119v113H84Z"/>
+    <path d="M101 151h85m-85 31h85m-85 31h85" fill="none" stroke="#8397a8" stroke-width="1.5"/>
+    <path d="M122 144h12v14h-12Zm35 31h12v14h-12Zm-43 31h12v14h-12Z" stroke="#65c6be"/>
+  </g>
+  <!-- Distinct routes and entities, without customer-specific labels. -->
+  <g fill="none" stroke="#8397a8" stroke-width="2" stroke-linejoin="miter">
+    <path d="M203 183h42V111h41m-41 72v72h41M345 111h67M345 255h67"/>
+    <path d="m405 104 7 7-7 7m0 130 7 7-7 7" stroke="#65c6be"/>
+  </g>
+  <path d="M240 178h10v10h-10Z" fill="#65c6be"/>
+  <g fill="#101d2b" stroke-width="2" stroke-linejoin="miter">
+    <path d="M286 87h59v48h-59Z" stroke="#dce5eb"/>
+    <path d="M286 231h59v48h-59Z" stroke="#dce5eb"/>
+    <path d="M298 99h17v24h-17Zm19 9h17M329 103l5 5-5 5" fill="none" stroke="#8397a8" stroke-width="1.5"/>
+    <path d="M299 243h33v24h-33Zm8 0v24m17-24v24" fill="none" stroke="#8397a8" stroke-width="1.5"/>
+  </g>
+  <!-- Document silhouettes: outward sale and returning refund arrows. -->
+  <g fill="#101d2b" stroke="#dce5eb" stroke-width="2" stroke-linejoin="miter">
+    <path d="M428 59h101l23 23v69l-9-5-9 5-9-5-9 5-9-5-9 5-9-5-9 5-9-5-9 5-9-5-11 5Z"/>
+    <path d="M529 59v23h23M428 205h101l23 23v69l-9-5-9 5-9-5-9 5-9-5-9 5-9-5-9 5-9-5-9 5-9-5-11 5Z"/>
+    <path d="M529 205v23h23"/>
+    <path d="M445 79h42m-42 14h60M445 225h42m-42 14h60" fill="none" stroke="#8397a8" stroke-width="1.5"/>
+    <path d="M454 120h56m-8-7 8 7-8 7M510 267h-56m8-7-8 7 8 7" fill="none" stroke="#65c6be"/>
+  </g>
+</svg>

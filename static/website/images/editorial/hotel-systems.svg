@@ -1,0 +1,54 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="760" height="620" viewBox="0 0 760 620" role="img" aria-labelledby="hotel-title hotel-desc">
+  <title id="hotel-title">Hotel architecture and connected systems</title>
+  <desc id="hotel-desc">An original isometric hotel cutaway: guest floors above a reception desk and server cabinet. Discrete right-angled connections lead to three abstract data layers. A conceptual architectural illustration, not a product interface.</desc>
+  <rect width="760" height="620" fill="#101d2b"/>
+  <g fill="none" stroke="#8397a8" stroke-width="1.5" stroke-linejoin="miter">
+    <path d="M74 438 295 548 544 424" opacity=".35"/>
+    <path d="M86 449v-18m-9 13 18-9M534 424l18-9m-9 0v18" opacity=".6"/>
+    <path d="M105 182v-24h48M486 107h40v24" opacity=".45"/>
+  </g>
+  <!-- Roof and two architectural elevations. -->
+  <g stroke="#dce5eb" stroke-width="2" stroke-linejoin="miter">
+    <path d="m120 202 208-104 178 89-208 104Z" fill="#101d2b"/>
+    <path d="m120 202 178 89v214l-178-89Z" fill="#8397a8" fill-opacity=".07"/>
+    <path d="m298 291 208-104v214L298 505Z" fill="#101d2b"/>
+    <path d="m141 202 187-93 156 78-186 93Z" fill="none" stroke="#8397a8" stroke-width="1.5"/>
+    <path d="m161 213 166-83 135 68M327 130v-21" fill="none" stroke="#8397a8" stroke-width="1.5"/>
+    <path d="m120 271 178 89 208-104M120 340l178 89 208-104" fill="none"/>
+    <path d="m298 360 208-104v11L298 371Zm0 69 208-104v11L298 440Z" fill="#8397a8" fill-opacity=".12" stroke="#8397a8" stroke-width="1.5"/>
+    <path d="m120 416 178 89 208-104" fill="none"/>
+  </g>
+  <!-- Repeated solid guest-room openings, not interface tiles. -->
+  <g fill="#101d2b" stroke="#8397a8" stroke-width="1.5">
+    <path d="m140 230 27 13v29l-27-13Zm49 24 27 14v29l-27-14Zm49 25 27 13v29l-27-13Z"/>
+    <path d="m140 299 27 13v29l-27-13Zm49 24 27 14v29l-27-14Zm49 25 27 13v29l-27-13Z"/>
+    <path d="m140 368 27 13v29l-27-13Zm49 24 27 14v29l-27-14Z"/>
+    <path d="m240 418 25 13v48l-25-13Z"/>
+  </g>
+  <!-- Cutaway partitions and beds on the upper floors. -->
+  <g fill="none" stroke="#8397a8" stroke-width="1.5" stroke-linejoin="miter">
+    <path d="M367 256v69m69-104v69M367 325v69m69-104v69"/>
+    <path d="m316 328 24-12 17 8-24 12-17-8v12m41-16v12l-24 12v-12M385 293l24-12 17 8-24 12-17-8v12m41-16v12l-24 12v-12M454 259l24-12 17 8-24 12-17-8v12m41-16v12l-24 12v-12"/>
+    <path d="m316 397 24-12 17 8-24 12-17-8v12m41-16v12l-24 12v-12M385 362l24-12 17 8-24 12-17-8v12m41-16v12l-24 12v-12M454 328l24-12 17 8-24 12-17-8v12m41-16v12l-24 12v-12"/>
+  </g>
+  <!-- Reception counter and infrastructure cabinet. -->
+  <g stroke-width="2" stroke-linejoin="miter">
+    <path d="m321 464 53-27 26 13-53 27Z" fill="#65c6be" fill-opacity=".13" stroke="#65c6be"/>
+    <path d="m321 464 26 13v18l-26-13Zm26 13 53-27v18l-53 27Z" fill="#101d2b" stroke="#65c6be"/>
+    <path d="m443 381 28-14 20 10v52l-28 14-20-10Z" fill="#101d2b" stroke="#dce5eb"/>
+    <path d="m443 381 20 10 28-14m-28 14v52m8-43 12-6m-12 18 12-6m-12 18 12-6" fill="none" stroke="#8397a8" stroke-width="1.5"/>
+  </g>
+  <!-- Orthogonal routing remains separate from the architecture. -->
+  <g fill="none" stroke="#65c6be" stroke-width="2" stroke-linejoin="miter">
+    <path d="M492 408h48V215h42M400 457h155V318h27M555 408h27"/>
+    <path d="m575 209 7 6-7 6m0 91 7 6-7 6m0 78 7 6-7 6"/>
+  </g>
+  <!-- An abstract stacked data plane, deliberately free of metrics. -->
+  <g stroke="#8397a8" stroke-width="1.5" fill="#101d2b" stroke-linejoin="miter">
+    <path d="M594 190h88v52h-88Zm10-10h88v52M614 170h88v52"/>
+    <path d="M594 292h88v52h-88Zm10-10h88v52M614 272h88v52"/>
+    <path d="M594 382h88v52h-88Zm10-10h88v52M614 362h88v52"/>
+    <path d="M610 207h54m-54 17h33M610 309h54m-54 17h33M610 399h54m-54 17h33"/>
+  </g>
+  <path d="M594 190v52m0 50v52m0 38v52" fill="none" stroke="#65c6be" stroke-width="3"/>
+</svg>

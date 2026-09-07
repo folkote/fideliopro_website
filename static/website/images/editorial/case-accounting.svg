@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="640" height="360" viewBox="0 0 640 360" role="img" aria-labelledby="accounting-title accounting-desc">
+  <title id="accounting-title">Ledger continuity and completed export</title>
+  <desc id="accounting-desc">A bound accounting ledger has one outlined missing entry. A right-angled path connects that gap to a complete set of export documents bearing a completion mark. No financial values or customer records are shown.</desc>
+  <rect width="640" height="360" fill="#101d2b"/>
+  <g fill="none" stroke="#8397a8" stroke-width="1.5">
+    <path d="M54 291h226m83 0h224" opacity=".4"/>
+    <path d="M62 76V60h36m480 0h-36m36 0v16" opacity=".55"/>
+  </g>
+  <!-- Bound ledger, with an actual visual gap rather than sample data. -->
+  <g fill="#101d2b" stroke-width="2" stroke-linejoin="miter">
+    <path d="M92 87h179v182H92Z" stroke="#8397a8"/>
+    <path d="M84 79h179v182H84Z" stroke="#dce5eb"/>
+    <path d="M109 79v182M130 106h111" fill="none" stroke="#8397a8" stroke-width="1.5"/>
+    <path d="M130 124h111v29H130Zm0 80h111v29H130Z" stroke="#8397a8" stroke-width="1.5"/>
+    <path d="M164 124v29m44-29v29m-44 51v29m44-29v29" fill="none" stroke="#8397a8" stroke-width="1.5"/>
+    <path d="M130 164h111v29H130Z" stroke="#65c6be" stroke-dasharray="5 5" stroke-width="1.5"/>
+    <path d="M75 106h18m-18 29h18m-18 29h18m-18 29h18m-18 29h18m-18 29h18" fill="none" stroke="#dce5eb"/>
+  </g>
+  <g fill="none" stroke="#65c6be" stroke-width="2" stroke-linejoin="miter">
+    <path d="M249 179h72v37h64m-8-7 8 7-8 7"/>
+  </g>
+  <!-- Offset pages read as documents, not a software screenshot. -->
+  <g fill="#101d2b" stroke-width="2" stroke-linejoin="miter">
+    <path d="M427 73h102l25 25v151H427Z" stroke="#8397a8"/>
+    <path d="M413 87h102l25 25v151H413Z" stroke="#8397a8"/>
+    <path d="M399 101h102l25 25v151H399Z" stroke="#dce5eb"/>
+    <path d="M501 101v25h25" fill="none" stroke="#dce5eb"/>
+    <path d="M419 144h55m-55 17h84M419 185h84m-84 18h84m-84 18h84" fill="none" stroke="#8397a8" stroke-width="1.5"/>
+    <path d="M419 240h33" fill="none" stroke="#8397a8" stroke-width="1.5"/>
+    <path d="M473 237h30v24h-30Z" stroke="#65c6be"/>
+    <path d="m480 248 5 5 11-12" fill="none" stroke="#65c6be"/>
+  </g>
+</svg>
